@@ -5,26 +5,14 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
-<<<<<<< Updated upstream
     align-items: flex-start;
     padding: 8.8rem 1rem 3rem;
     background: #ffffff;
     color: #696f7a;
-=======
-    align-items: center;
-    padding: 5rem 1rem;
-    background-color: #e9e7e1;
-    background-image: linear-gradient(rgba(12, 32, 54, 0.12), rgba(12, 32, 54, 0.2)), url('/images/component/BGKesbangpol.png');
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    background-size: cover;
-    color: white;
->>>>>>> Stashed changes
     position: relative;
     overflow: hidden;
 }
 
-<<<<<<< Updated upstream
 /* Ilustrasi Eksklusif Kesbangpol Kota Bandung di Bawah */
 .hero-skyline {
     position: absolute;
@@ -39,14 +27,6 @@
     opacity: 1;
     z-index: 1;
     pointer-events: none;
-=======
-.hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(17, 28, 42, 0.06) 0%, rgba(17, 28, 42, 0.12) 100%);
-    z-index: 0;
->>>>>>> Stashed changes
 }
 
 /* Floating elements for background */
