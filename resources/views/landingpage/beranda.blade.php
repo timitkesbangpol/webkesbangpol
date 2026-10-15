@@ -4,6 +4,64 @@
 @push('styles')
     @vite(['resources/css/home.css'])
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.css">
+
+    <style>
+        /* ===== Sorotan Kegiatan (carousel coverflow) ===== */
+        .highlight-swiper {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 0 50px;
+        }
+
+        .highlight-swiper .swiper-slide { width: 560px; }
+
+        .highlight-swiper .highlight-card { aspect-ratio: auto; }
+
+        /* !important menimpa .swiper-slide img { height: 80vh !important } di home.css */
+        .highlight-swiper .highlight-card img {
+            width: 100%;
+            height: 320px !important;
+            object-fit: cover !important;
+        }
+
+        /* hilangkan bayangan bawaan efek coverflow */
+        .highlight-swiper .swiper-slide-shadow-left,
+        .highlight-swiper .swiper-slide-shadow-right {
+            background: none !important;
+        }
+
+        /* bullet aktif: menimpa aturan putih di home.css */
+        .highlight-swiper .swiper-pagination-bullet-active {
+            background: #B40D1A !important;
+            opacity: 1 !important;
+        }
+
+        /* panah: menimpa display:none di home.css */
+        .highlight-swiper .swiper-button-prev,
+        .highlight-swiper .swiper-button-next {
+            display: flex;
+            color: #B40D1A;
+        }
+
+        .highlight-swiper .swiper-button-prev::after,
+        .highlight-swiper .swiper-button-next::after {
+            display: block !important;
+        }
+
+        .highlight-swiper .swiper-button-prev:hover,
+        .highlight-swiper .swiper-button-next:hover {
+            color: #8f0a13 !important;
+            transform: none !important;
+        }
+
+        @media (max-width: 576px) {
+            .highlight-swiper .swiper-slide { width: 300px; }
+            .highlight-swiper .highlight-card img { height: 220px !important; }
+        }
+    </style>
+
     <style>
         /* ===== Galeri Kegiatan (marquee) ===== */
         .galeri-marquee {
@@ -82,6 +140,14 @@
 
 
     {{-- ========================== Sorotan Kegiatan (Highlight Besar) ========================== --}}
+    @php
+        // Swiper mode loop butuh slide yang cukup; gandakan jika kurang dari 6
+        $slides = collect($banners);
+        while ($slides->count() > 0 && $slides->count() < 6) {
+            $slides = $slides->concat($banners);
+        }
+    @endphp
+
     <section class="galeri-section" id="highlight-section" data-aos="fade-up" data-aos-duration="1000">
         <div class="galeri-header">
             <span class="section-tag">Sorotan</span>
@@ -89,21 +155,29 @@
             <p class="desc-galeri">Momen dan kegiatan terkini Bakesbangpol Kota Bandung</p>
         </div>
 
-        <div class="highlight-stack-container">
-            @foreach ($banners as $banner)
-                <div class="highlight-card"
-                     data-bs-toggle="modal"
-                     data-bs-target="#highlightModal"
-                     data-img="{{ asset('images/banner/' . $banner->gambar_upload) }}"
-                     data-title="{{ $banner->judul }}"
-                     data-desc="{{ $banner->caption }}">
-                    <img src="{{ asset('images/banner/' . $banner->gambar_upload) }}" alt="{{ $banner->judul }}" loading="lazy">
-                    <div class="highlight-overlay">
-                        <h3>{{ $banner->judul }}</h3>
-                        <span class="highlight-tap-hint"><i class="fas fa-circle-info"></i> Ketuk untuk lihat detail</span>
+        <div class="swiper highlight-swiper">
+            <div class="swiper-wrapper">
+                @foreach ($slides as $banner)
+                    <div class="swiper-slide">
+                        <div class="highlight-card"
+                             data-bs-toggle="modal"
+                             data-bs-target="#highlightModal"
+                             data-img="{{ asset('images/banner/' . $banner->gambar_upload) }}"
+                             data-title="{{ $banner->judul }}"
+                             data-desc="{{ $banner->caption }}">
+                            <img src="{{ asset('images/banner/' . $banner->gambar_upload) }}" alt="{{ $banner->judul }}" loading="lazy">
+                            <div class="highlight-overlay">
+                                <h3>{{ $banner->judul }}</h3>
+                                <span class="highlight-tap-hint"><i class="fas fa-circle-info"></i> Ketuk untuk lihat detail</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
+
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
         </div>
     </section>
 
@@ -287,6 +361,28 @@
         </div>
     </section>
 
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                new Swiper('.highlight-swiper', {
+                    effect: 'coverflow',
+                    grabCursor: true,
+                    centeredSlides: true,
+                    slidesPerView: 'auto',
+                    spaceBetween: 50,
+                    loop: true,
+                    autoplay: { delay: 2000, disableOnInteraction: false },
+                    coverflowEffect: { rotate: 0, stretch: 0, depth: 100, modifier: 2.5 },
+                    pagination: { el: '.highlight-swiper .swiper-pagination', clickable: true },
+                    navigation: {
+                        nextEl: '.highlight-swiper .swiper-button-next',
+                        prevEl: '.highlight-swiper .swiper-button-prev',
+                    },
+                });
+            });
+        </script>
+    @endpush
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
