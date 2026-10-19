@@ -1,4 +1,19 @@
-{{-- Style header sudah dipindahkan ke public/assets/css/landingpage-shared.css --}}
+{{-- Style header navbar --}}
+<style>
+    .nav-wrapper {
+        padding-top: 42px !important;
+    }
+    @media (max-width: 991.98px) {
+        .nav-wrapper {
+            padding-top: 24px !important;
+        }
+    }
+    @media (max-width: 576px) {
+        .nav-wrapper {
+            padding-top: 18px !important;
+        }
+    }
+</style>
 
 <!-- Backdrop untuk Focus Mode & Mobile Menu -->
 <div class="nav-backdrop" id="navBackdrop" onclick="closeMobileMenu()"></div>

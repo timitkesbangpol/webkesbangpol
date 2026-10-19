@@ -7,18 +7,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.css">
 
     <style>
-        /* Posisi hero section diturunkan agar lebih proporsional dan tidak mepet navbar */
+        /* Posisi hero section disesuaikan dengan navbar yang turun */
         .hero {
-            padding-top: 11rem !important;
+            padding-top: 9rem !important;
         }
         @media (max-width: 768px) {
             .hero {
-                padding-top: 8.5rem !important;
+                padding-top: 7rem !important;
             }
         }
         @media (max-width: 576px) {
             .hero {
-                padding-top: 7.2rem !important;
+                padding-top: 6rem !important;
             }
         }
 

@@ -51,7 +51,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <link rel="stylesheet" href="{{ asset('assets/css/landingpage-shared.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/landingpage-shared.css') }}?v={{ @filemtime(public_path('assets/css/landingpage-shared.css')) ?: time() }}">
     
     {{-- Schema.org Structured Data (JSON-LD) untuk Google Search --}}
     <script type="application/ld+json">
