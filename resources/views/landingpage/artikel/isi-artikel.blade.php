@@ -6,10 +6,6 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/articles.css') }}">
-<<<<<<< Updated upstream
-@endpush
-
-=======
     <style>
         body {
             background-image: linear-gradient(rgba(12, 47, 78, 0.72), rgba(12, 47, 78, 0.72)), url("{{ asset('images/component/BGKesbangpol.png') }}") !important;
@@ -19,7 +15,41 @@
             background-attachment: fixed !important;
         }
     </style>
->>>>>>> Stashed changes
+@endpush
+
+@push('schema')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ url()->current() }}"
+  },
+  "headline": {!! json_encode($post->title) !!},
+  "image": [
+    "{{ asset('images/posts/' . $post->image) }}"
+  ],
+  "datePublished": "{{ ($post->created_at ?? now())->toIso8601String() }}",
+  "dateModified": "{{ ($post->updated_at ?? $post->created_at ?? now())->toIso8601String() }}",
+  "author": {
+    "@type": "Organization",
+    "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
+    "url": "{{ url('/') }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ asset('images/component/logoremovebg2.png') }}"
+    }
+  },
+  "description": {!! json_encode(Str::limit(strip_tags($post->content), 160)) !!},
+  "articleSection": {!! json_encode(optional($post->bidang)->nama_bidang ?? 'Berita') !!}
+}
+</script>
+@endpush
 @section('content')
 <div class="back-to-home">
     <a href="{{ route('beranda') }}" class="back-btn">

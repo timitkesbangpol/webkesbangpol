@@ -46,6 +46,66 @@
 
     <link rel="stylesheet" href="{{ asset('assets/css/landingpage-shared.css') }}">
     
+    {{-- Schema.org Structured Data (JSON-LD) untuk Google Search --}}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "GovernmentOrganization",
+          "@id": "{{ url('/') }}#organization",
+          "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
+          "alternateName": [
+            "Bakesbangpol Kota Bandung",
+            "Kesbangpol Kota Bandung",
+            "Badan Kesbangpol Kota Bandung",
+            "Kesbangpol Bandung"
+          ],
+          "url": "{{ url('/') }}",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "{{ asset('images/component/logoremovebg2.png') }}"
+          },
+          "image": "{{ asset('images/component/logoremovebg2.png') }}",
+          "description": "Portal Resmi Badan Kesatuan Bangsa dan Politik Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Jl. Wastukencana No.2, Babakan Ciamis, Kec. Sumur Bandung",
+            "addressLocality": "Bandung",
+            "addressRegion": "Jawa Barat",
+            "postalCode": "40117",
+            "addressCountry": "ID"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+62-22-4235052",
+            "contactType": "customer service",
+            "areaServed": "ID",
+            "availableLanguage": "Indonesian"
+          },
+          "sameAs": [
+            "https://www.instagram.com/bakesbangpolkotabandung/",
+            "https://www.tiktok.com/@kesbangpolkotabandung",
+            "https://layanan.bandung.go.id"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "{{ url('/') }}#website",
+          "url": "{{ url('/') }}",
+          "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
+          "alternateName": "Bakesbangpol Kota Bandung",
+          "description": "Portal Resmi Badan Kesatuan Bangsa dan Politik Kota Bandung",
+          "publisher": {
+            "@id": "{{ url('/') }}#organization"
+          },
+          "inLanguage": "id-ID"
+        }
+      ]
+    }
+    </script>
+    @stack('schema')
+
     {{-- Tempat tambahan CSS dari blade lain --}}
     @stack('styles')
 </head>

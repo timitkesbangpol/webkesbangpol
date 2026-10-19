@@ -50,6 +50,17 @@ Auth::routes(['register' => false]);
 //========================================================================
 // LANDING PAGE ROUTES (PUBLIC)
 //========================================================================
+Route::get('/sitemap.xml', function () {
+    $posts = \App\Models\Post::whereNotNull('slug')
+        ->where('slug', '!=', '')
+        ->latest('updated_at')
+        ->get();
+
+    return response()
+        ->view('landingpage.sitemap', compact('posts'))
+        ->header('Content-Type', 'text/xml; charset=utf-8');
+})->name('sitemap');
+
 Route::get('/', [LandingpageController::class, 'index'])->name('beranda');
 Route::get('/artikel/{slug}', [LandingpageController::class, 'isiArtikel'])->name('isi-artikel');
 Route::get('/articles', [LandingpageController::class, 'semuaArtikel'])->name('semua-artikel');
