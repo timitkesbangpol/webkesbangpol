@@ -9,7 +9,7 @@
     <style>
         /* Posisi hero section diturunkan agar lebih proporsional dan tidak mepet navbar */
         .hero {
-            padding-top: 12rem !important;
+            padding-top: 11rem !important;
         }
         @media (max-width: 768px) {
             .hero {
