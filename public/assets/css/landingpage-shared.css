@@ -73,7 +73,7 @@ img.responsive-photo {
    ========================================================================== */
 .nav-wrapper {
     position: sticky;
-    top: 14px;
+    top: 26px;
     z-index: 9999;
     background-color: transparent !important;
     width: 100%;
@@ -291,6 +291,7 @@ img.responsive-photo {
 
 @media (max-width: 991.98px) {
     .nav-wrapper {
+        top: 18px;
         padding: 12px 0 6px 0;
     }
     .navbar-pill {
@@ -384,6 +385,7 @@ img.responsive-photo {
 
 @media (max-width: 576px) {
     .nav-wrapper {
+        top: 14px;
         padding: 10px 0 4px 0;
     }
     .navbar-pill {
