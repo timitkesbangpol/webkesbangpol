@@ -6,4 +6,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /password/
 
-Sitemap: https://kesbangpol.bandung.go.id/sitemap.xml
+Sitemap: https://bakesbangpol.bandung.go.id/sitemap.xml

@@ -5,9 +5,9 @@
 
     RewriteEngine On
 
-    # Redirect permanen (301) subdomain portal ke domain utama (bagus untuk SEO Google)
-    RewriteCond %{HTTP_HOST} ^portal\.kesbangpol\.bandung\.go\.id$ [NC]
-    RewriteRule ^(.*)$ https://kesbangpol.bandung.go.id/$1 [L,R=301]
+    # Redirect permanen (301) domain lama kesbangpol & subdomain portal ke domain baru bakesbangpol
+    RewriteCond %{HTTP_HOST} ^(portal\.)?kesbangpol\.bandung\.go\.id$ [NC]
+    RewriteRule ^(.*)$ https://bakesbangpol.bandung.go.id/$1 [L,R=301]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
