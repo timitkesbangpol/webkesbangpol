@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.css">
 
     <style>
+        /* Posisi hero section diturunkan agar lebih proporsional dan tidak mepet navbar */
+        .hero {
+            padding-top: 12rem !important;
+        }
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 8.5rem !important;
+            }
+        }
+        @media (max-width: 576px) {
+            .hero {
+                padding-top: 7.2rem !important;
+            }
+        }
+
         /* ===== Sorotan Kegiatan (carousel coverflow) ===== */
         .highlight-swiper {
             width: 100%;

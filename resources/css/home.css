@@ -6,7 +6,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 8.8rem 1rem 3rem;
+    padding: 12rem 1rem 3rem;
     background: #ffffff;
     color: #696f7a;
     position: relative;
@@ -347,7 +347,7 @@
 /* Responsive styles */
 @media (max-width: 768px) {
     .hero {
-        padding: 6.8rem 1rem 2rem;
+        padding: 8.5rem 1rem 2rem;
     }
 
     .hero-content h1 {
@@ -366,7 +366,7 @@
 
 @media (max-width: 576px) {
     .hero {
-        padding: 5.8rem 1rem 1.5rem;
+        padding: 7.2rem 1rem 1.5rem;
     }
 
     .hero-content h1 {
