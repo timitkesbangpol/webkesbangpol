@@ -5,17 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     
     @php
-        $pageTitle = trim($__env->yieldContent('title')) ? trim($__env->yieldContent('title')) . ' - Badan Kesatuan Bangsa dan Politik Kota Bandung' : 'Bakesbangpol Kota Bandung';
-        $metaDesc = trim($__env->yieldContent('meta_description')) ?: 'Portal Resmi Badan Kesatuan Bangsa dan Politik (Bakesbangpol) Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.';
+        $rawTitle = trim($__env->yieldContent('title'));
+        if (empty($rawTitle) || in_array(strtolower($rawTitle), ['halaman beranda', 'beranda', 'bakesbangpol', 'bakesbangpol kota bandung'])) {
+            $pageTitle = 'Bakesbangpol Kota Bandung';
+        } else {
+            $pageTitle = $rawTitle . ' - Bakesbangpol Kota Bandung';
+        }
+        $metaDesc = trim($__env->yieldContent('meta_description')) ?: 'Portal Resmi Bakesbangpol (Badan Kesatuan Bangsa dan Politik) Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.';
         $metaImg = trim($__env->yieldContent('meta_image')) ?: asset('images/component/logoremovebg2.png');
         $ogType = trim($__env->yieldContent('og_type')) ?: 'website';
     @endphp
 
     <title>{{ $pageTitle }}</title>
 
+    <meta name="application-name" content="Bakesbangpol Kota Bandung" />
+    <meta name="apple-mobile-web-app-title" content="Bakesbangpol" />
     <meta name="description" content="{{ $metaDesc }}" />
-    <meta name="keywords" content="Bakesbangpol Bandung, Kesbangpol Kota Bandung, Kesatuan Bangsa, Politik Kota Bandung, Ormas Bandung" />
-    <meta name="author" content="Badan Kesatuan Bangsa dan Politik Kota Bandung" />
+    <meta name="keywords" content="Bakesbangpol Kota Bandung, Bakesbangpol Bandung, Kesbangpol Kota Bandung, Badan Kesatuan Bangsa dan Politik Kota Bandung, Ormas Bandung" />
+    <meta name="author" content="Bakesbangpol Kota Bandung" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="{{ url()->current() }}" />
 
@@ -54,11 +61,13 @@
         {
           "@type": "GovernmentOrganization",
           "@id": "{{ url('/') }}#organization",
-          "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
+          "name": "Bakesbangpol Kota Bandung",
+          "legalName": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
           "alternateName": [
-            "Bakesbangpol Kota Bandung",
+            "Bakesbangpol",
+            "BAKESBANGPOL",
             "Kesbangpol Kota Bandung",
-            "Badan Kesbangpol Kota Bandung",
+            "Badan Kesatuan Bangsa dan Politik Kota Bandung",
             "Kesbangpol Bandung"
           ],
           "url": "{{ url('/') }}",
@@ -67,7 +76,7 @@
             "url": "{{ asset('images/component/logoremovebg2.png') }}"
           },
           "image": "{{ asset('images/component/logoremovebg2.png') }}",
-          "description": "Portal Resmi Badan Kesatuan Bangsa dan Politik Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.",
+          "description": "Portal Resmi Bakesbangpol Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.",
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "Jl. Wastukencana No.2, Babakan Ciamis, Kec. Sumur Bandung",
@@ -93,9 +102,15 @@
           "@type": "WebSite",
           "@id": "{{ url('/') }}#website",
           "url": "{{ url('/') }}",
-          "name": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
-          "alternateName": "Bakesbangpol Kota Bandung",
-          "description": "Portal Resmi Badan Kesatuan Bangsa dan Politik Kota Bandung",
+          "name": "Bakesbangpol Kota Bandung",
+          "alternateName": [
+            "Bakesbangpol",
+            "BAKESBANGPOL",
+            "Bakesbangpol Bandung",
+            "Kesbangpol Kota Bandung",
+            "Badan Kesatuan Bangsa dan Politik Kota Bandung"
+          ],
+          "description": "Portal Resmi Bakesbangpol Kota Bandung",
           "publisher": {
             "@id": "{{ url('/') }}#organization"
           },

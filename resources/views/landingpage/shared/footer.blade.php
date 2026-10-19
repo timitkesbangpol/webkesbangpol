@@ -7,7 +7,7 @@
         <img src="{{ asset('images/component/logo1-2.png') }}" alt="Logo Bakesbangpol" class="footer-logo img-fluid">
       </a>
       <div class="footer-title text-left fw-bold">
-        <div>BADAN KESATUAN BANGSA DAN POLITIK</div>
+        <div>BAKESBANGPOL</div>
         <div>KOTA BANDUNG</div>
       </div>
     </div>
@@ -65,7 +65,7 @@
 
   <!-- Baris Ketiga: Copyright -->
   <div class="footer-bottom reveal" style="--reveal-delay: 0.5s">
-    <p>&copy; 2025 Badan Kesatuan Bangsa dan Politik Kota Bandung. All rights reserved.</p>
+    <p>&copy; 2025 Bakesbangpol Kota Bandung. All rights reserved.</p>
   </div>
 </footer>
 

@@ -1,5 +1,5 @@
 @extends('landingpage.layouts.app')
-@section('title', 'Halaman Beranda')
+@section('title', 'Bakesbangpol Kota Bandung')
 
 @push('styles')
     @vite(['resources/css/home.css'])
@@ -129,9 +129,8 @@
         <div class="hero-container">
             <div class="hero-content">
                 <h2 class="display-5 fw-light fade-in" id="welcome-text">PUSAT INFORMASI DAN PELAYANAN</h2>
-                <h1 class="fw-bold fade-in" id="title">BADAN KESATUAN BANGSA DAN POLITIK</h1>
-                <h1 class="fw-bold fade-in" id="title">KOTA BANDUNG</h1>
-                <p class="lead fade-in" id="description">Menyajikan Informasi Terbaru dan Artikel Inspiratif untuk Mendukung Pemahaman Kebangsaan Anda</p>
+                <h1 class="fw-bold fade-in" id="title">BAKESBANGPOL KOTA BANDUNG</h1>
+                <p class="lead fade-in" id="description">Badan Kesatuan Bangsa dan Politik Kota Bandung &mdash; Menyajikan Informasi Terbaru dan Layanan Publik</p>
 
                 <div class="divider fade-in"></div>
             </div>

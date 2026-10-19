@@ -8,8 +8,8 @@
         <a href="/" class="brand-logo d-flex align-items-center text-decoration-none">
             <img src="{{ asset('images/component/logo3.png') }}" alt="Logo">
             <img src="{{ asset('images/component/logo1-2.png') }}" alt="Logo" class="ms-2">
-            <div class="ms-3 text-white fw-bold brand-text" style="line-height: 1.15; font-size: 0.8rem; letter-spacing: 0.2px;">
-                BADAN KESATUAN BANGSA DAN POLITIK<br>KOTA BANDUNG
+            <div class="ms-3 text-white fw-bold brand-text" style="line-height: 1.15; font-size: 0.85rem; letter-spacing: 0.2px;">
+                BAKESBANGPOL<br>KOTA BANDUNG
             </div>
         </a>
 
@@ -23,7 +23,7 @@
             <div class="mobile-menu-header">
                 <div class="d-flex align-items-center">
                     <img src="{{ asset('images/component/logo1-2.png') }}" alt="Logo" style="height: 35px;">
-                    <span class="ms-2 text-white fw-bold" style="font-size: 0.9rem;">KESBANGPOL</span>
+                    <span class="ms-2 text-white fw-bold" style="font-size: 0.9rem;">BAKESBANGPOL</span>
                 </div>
                 <button class="btn-close-menu" onclick="closeMobileMenu()">
                     <i class="fas fa-times"></i>
@@ -50,7 +50,7 @@
                             <a href="{{ route('tampilprogram') }}">Program & Kegiatan</a>
                             <a href="{{ route('tampilsejarah') }}">Sejarah</a>
                         </div>
-                        <div class="col-md-4"><div class="mega-menu-empty">Informasi kelembagaan Kesbangpol Kota Bandung yang mencakup visi misi hingga sejarah.</div></div>
+                        <div class="col-md-4"><div class="mega-menu-empty">Informasi kelembagaan Bakesbangpol Kota Bandung yang mencakup visi misi hingga sejarah.</div></div>
                     </div></div>
                 </li>
 
