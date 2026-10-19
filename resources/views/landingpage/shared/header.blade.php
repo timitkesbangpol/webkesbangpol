@@ -1,16 +1,16 @@
 {{-- Style header navbar --}}
 <style>
     .nav-wrapper {
-        padding-top: 42px !important;
+        padding-top: 25px !important;
     }
     @media (max-width: 991.98px) {
         .nav-wrapper {
-            padding-top: 24px !important;
+            padding-top: 18px !important;
         }
     }
     @media (max-width: 576px) {
         .nav-wrapper {
-            padding-top: 18px !important;
+            padding-top: 12px !important;
         }
     }
 </style>
