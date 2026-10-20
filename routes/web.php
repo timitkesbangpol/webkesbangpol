@@ -46,7 +46,20 @@ use App\Http\Controllers\Admin\Pemilu\LegislatifController;
 //========================================================================
 Route::get('/captcha', [LoginController::class, 'captcha'])->name('captcha');
 Route::get('/reload-captcha', [LoginController::class, 'reloadCaptcha'])->name('captcha.reload');
-Auth::routes(['register' => false]);
+$adminLoginPath = env('ADMIN_LOGIN_PATH', 'kelola-bakesbangpol');
+
+// Rute Login Resmi Admin (Secret Path)
+Route::get($adminLoginPath, [LoginController::class, 'showLoginForm'])->name('login');
+Route::post($adminLoginPath, [LoginController::class, 'login'])->middleware('throttle:10,1')->name('login.process');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Blokir /login default agar bot & scanner langsung mendapat 404 Not Found
+Route::any('/login', function () {
+    abort(404);
+});
+Route::any('/admin/login', function () {
+    abort(404);
+});
 
 //========================================================================
 // ROUTE SISTEM OTP VERIFIKASI 2FA

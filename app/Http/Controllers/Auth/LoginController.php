@@ -143,7 +143,8 @@ class LoginController extends Controller
         // Bersihkan url.intended jika mengarah ke captcha atau login
         if ($request->session()->has('url.intended')) {
             $intended = (string) $request->session()->get('url.intended');
-            if (str_contains($intended, '/captcha') || str_contains($intended, '/login')) {
+            $customPath = (string) env('ADMIN_LOGIN_PATH', 'kelola-bakesbangpol');
+            if (str_contains($intended, '/captcha') || str_contains($intended, '/login') || str_contains($intended, $customPath)) {
                 $request->session()->forget('url.intended');
             }
         }
