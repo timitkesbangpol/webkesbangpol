@@ -3,7 +3,87 @@
 @section('title', 'Login')
 
 @section('auth_body')
-    <link rel="stylesheet" href="{{ asset('assets/css/login-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/login-form.css') }}?v={{ filemtime(public_path('assets/css/login-form.css')) }}">
+    <style>
+        .captcha-group-wrapper {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            margin-top: 6px !important;
+            width: 100% !important;
+        }
+        .captcha-img-box {
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: 1.5px solid #d8d8d8 !important;
+            border-radius: 10px !important;
+            background: #f8fafc !important;
+            overflow: hidden !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+            height: 46px !important;
+            transition: all 0.2s ease !important;
+        }
+        .captcha-img-box:hover {
+            border-color: #8C0A0F !important;
+            box-shadow: 0 2px 8px rgba(140, 10, 15, 0.12) !important;
+        }
+        .captcha-image {
+            display: block !important;
+            width: 145px !important;
+            height: 42px !important;
+            object-fit: contain !important;
+        }
+        .btn-captcha-refresh {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 46px !important;
+            height: 46px !important;
+            background: #ffffff !important;
+            border: 1.5px solid #d8d8d8 !important;
+            border-radius: 10px !important;
+            color: #8C0A0F !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+            padding: 0 !important;
+            transition: all 0.2s ease !important;
+        }
+        .btn-captcha-refresh:hover {
+            background: #fff5f5 !important;
+            border-color: #8C0A0F !important;
+            color: #a90e18 !important;
+        }
+        .btn-captcha-refresh:active {
+            transform: scale(0.95) !important;
+        }
+        .btn-captcha-refresh .refresh-icon {
+            display: inline-block !important;
+            width: 18px !important;
+            height: 18px !important;
+            transition: transform 0.4s ease-in-out !important;
+        }
+        @keyframes spinCaptcha {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .btn-captcha-refresh.is-spinning .refresh-icon {
+            animation: spinCaptcha 0.5s linear infinite !important;
+        }
+        .captcha-input-field {
+            flex: 1 !important;
+            min-width: 0 !important;
+            height: 46px !important;
+            text-transform: uppercase !important;
+            font-weight: 700 !important;
+            letter-spacing: 2px !important;
+            font-size: 0.95rem !important;
+            padding: 8px 10px !important;
+            text-align: center !important;
+        }
+    </style>
 
     @php
         $loginUrl = route('login');
@@ -47,11 +127,11 @@
                 {{-- CAPTCHA --}}
                 <div class="form-group mt-3">
                     <label for="captcha">Captcha</label>
-                    <div class="captcha-group-wrapper">
-                        <div class="captcha-img-box" id="captcha-img-box" title="Klik untuk muat ulang captcha" onclick="reloadCaptcha()">
-                            <img src="{{ route('captcha') }}" alt="Captcha" class="captcha-image" id="captcha-image">
+                    <div class="captcha-group-wrapper d-flex align-items-center gap-2" style="display: flex !important; align-items: center !important; gap: 8px !important; width: 100% !important;">
+                        <div class="captcha-img-box" id="captcha-img-box" title="Klik untuk muat ulang captcha" onclick="reloadCaptcha()" style="height: 46px !important; border: 1.5px solid #d8d8d8 !important; border-radius: 10px !important; background: #f8fafc !important; overflow: hidden !important; cursor: pointer !important; flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important;">
+                            <img src="{{ route('captcha') }}" alt="Captcha" class="captcha-image" id="captcha-image" style="display: block !important; width: 145px !important; height: 42px !important; object-fit: contain !important;">
                         </div>
-                        <button type="button" class="btn-captcha-refresh" id="btn-reload-captcha" title="Muat ulang kode captcha" onclick="reloadCaptcha()">
+                        <button type="button" class="btn-captcha-refresh" id="btn-reload-captcha" title="Muat ulang kode captcha" onclick="reloadCaptcha()" style="width: 46px !important; height: 46px !important; background: #ffffff !important; border: 1.5px solid #d8d8d8 !important; border-radius: 10px !important; color: #8C0A0F !important; cursor: pointer !important; flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important;">
                             <svg class="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="23 4 23 10 17 10"></polyline>
                                 <polyline points="1 20 1 14 7 14"></polyline>
@@ -60,7 +140,8 @@
                         </button>
                         <input type="text" id="captcha" name="captcha"
                             class="form-control captcha-input-field @error('captcha') is-invalid @enderror"
-                            placeholder="5 kode" maxlength="5" required autocomplete="off">
+                            placeholder="5 kode" maxlength="5" required autocomplete="off"
+                            style="height: 46px !important; text-transform: uppercase !important; font-weight: 700 !important; letter-spacing: 2px !important; text-align: center !important; font-size: 0.95rem !important; flex: 1 !important; min-width: 0 !important;">
                     </div>
                     @error('captcha')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
