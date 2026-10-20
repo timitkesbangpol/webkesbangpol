@@ -171,8 +171,21 @@ class LoginController extends Controller
                 },
             ],
         ], [
-            'email.exists' => 'Alamat email tidak terdaftar dalam sistem. Hanya akun resmi Bakesbangpol yang dapat masuk.',
+            'email.required' => 'Alamat email atau Gmail wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Alamat email atau Gmail tidak terdaftar dalam sistem Bakesbangpol.',
+            'password.required' => 'Password akun wajib diisi.',
             'captcha.required' => 'Kode captcha wajib diisi.',
+        ]);
+    }
+
+    /**
+     * Kustomisasi peringatan jika password yang dimasukkan salah
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            'password' => ['Password yang Anda masukkan salah. Silakan periksa kembali kata sandi akun Anda.'],
         ]);
     }
 

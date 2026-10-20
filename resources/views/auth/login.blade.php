@@ -83,6 +83,11 @@
             padding: 8px 10px !important;
             text-align: center !important;
         }
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            15%, 55% { transform: translateX(-6px); }
+            35%, 75% { transform: translateX(6px); }
+        }
     </style>
 
     @php
@@ -99,6 +104,25 @@
                 <h2 class="logo-text m-0">BAKESBANGPOL</h2>
             </div>
             <h3 class="text-center mb-0">Sign in to start your session</h3>
+
+            {{-- Alert Box Peringatan Kesalahan Login --}}
+            @if ($errors->any())
+                <div class="alert alert-danger d-flex align-items-center mt-3 mb-2 p-3 rounded-3 shadow-sm" role="alert" style="background-color: #fee2e2; border: 1.5px solid #ef4444 !important; border-left: 5px solid #dc2626 !important; color: #991b1b; animation: shakeError 0.4s ease-in-out;">
+                    <i class="fas fa-triangle-exclamation fs-4 me-3 flex-shrink-0" style="color: #dc2626;"></i>
+                    <div class="small fw-semibold">
+                        @if ($errors->has('password'))
+                            {{ $errors->first('password') }}
+                        @elseif ($errors->has('email'))
+                            {{ $errors->first('email') }}
+                        @elseif ($errors->has('captcha'))
+                            {{ $errors->first('captcha') }}
+                        @else
+                            {{ $errors->first() }}
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <form action="{{ $loginUrl }}" method="POST" class="login-form">
                 @csrf
 
@@ -109,7 +133,9 @@
                         class="form-control @error('email') is-invalid @enderror"
                         value="{{ old('email') }}" placeholder="Masukkan email" required autofocus>
                     @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block fw-semibold mt-1" style="color: #dc2626 !important; font-size: 0.85rem;">
+                            <i class="fas fa-circle-exclamation me-1"></i> {{ $message }}
+                        </div>
                     @enderror
                 </div>
 
@@ -120,7 +146,9 @@
                         class="form-control @error('password') is-invalid @enderror"
                         placeholder="Masukkan password" required autocomplete="off">
                     @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block fw-semibold mt-1" style="color: #dc2626 !important; font-size: 0.85rem;">
+                            <i class="fas fa-circle-exclamation me-1"></i> {{ $message }}
+                        </div>
                     @enderror
                 </div>
 
