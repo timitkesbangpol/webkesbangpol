@@ -65,7 +65,7 @@
 
   <!-- Baris Ketiga: Copyright -->
   <div class="footer-bottom reveal" style="--reveal-delay: 0.5s">
-    <p>&copy; 2025 Bakesbangpol Kota Bandung. All rights reserved.</p>
+    <p>&copy; {{ date('Y') }} Bakesbangpol Kota Bandung. All rights reserved.</p>
   </div>
 </footer>
 

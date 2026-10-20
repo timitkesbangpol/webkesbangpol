@@ -5,7 +5,11 @@
 
     RewriteEngine On
 
-    # Redirect permanen (301) domain lama kesbangpol & subdomain portal ke domain baru bakesbangpol
+    # 1. Paksa HTTPS Redirect (Security Enforced)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Redirect permanen (301) domain lama kesbangpol & subdomain portal ke domain baru bakesbangpol
     RewriteCond %{HTTP_HOST} ^(portal\.)?kesbangpol\.bandung\.go\.id$ [NC]
     RewriteRule ^(.*)$ https://bakesbangpol.bandung.go.id/$1 [L,R=301]
 
@@ -62,4 +66,14 @@
     ExpiresByType font/woff "access plus 1 year"
     ExpiresByType font/woff2 "access plus 1 year"
     ExpiresByType font/ttf "access plus 1 year"
+</IfModule>
+
+# =========================================================================
+# 3. HTTP SECURITY HEADERS
+# =========================================================================
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
