@@ -13,11 +13,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Akun Tim IT Kesbangpol
+        User::updateOrCreate(
+            ['email' => 'timitkesbangpol@gmail.com'],
+            [
+                'name' => 'Tim IT Kesbangpol',
+                'password' => \Illuminate\Support\Facades\Hash::make('B4kesbangpol#IT2026!'),
+                'email_verified_at' => now(),
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 2. Akun Sekretariat Kesbangpol
+        User::updateOrCreate(
+            ['email' => 'kesbangplsekre@gmail.com'],
+            [
+                'name' => 'Sekretariat Kesbangpol',
+                'password' => \Illuminate\Support\Facades\Hash::make('B4kesbangpol@Sekre2026!'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Hapus akun selain 2 akun resmi di atas
+        User::whereNotIn('email', ['timitkesbangpol@gmail.com', 'kesbangplsekre@gmail.com'])->delete();
     }
 }
