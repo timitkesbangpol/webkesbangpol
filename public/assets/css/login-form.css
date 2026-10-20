@@ -72,14 +72,6 @@
     box-shadow: 0 0 0 3px rgba(180, 13, 20, 0.15);
 }
 
-.captcha-badge-hint {
-    font-size: 0.76rem;
-    color: #64748b;
-    background: #f1f5f9;
-    padding: 2px 8px;
-    border-radius: 999px;
-    user-select: none;
-}
 
 .captcha-group-wrapper {
     display: flex;

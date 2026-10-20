@@ -46,10 +46,7 @@
 
                 {{-- CAPTCHA --}}
                 <div class="form-group mt-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label for="captcha" class="mb-0">Kode Verifikasi (Captcha)</label>
-                        <span class="captcha-badge-hint" title="Klik gambar atau tombol untuk ganti kode">Klik untuk ganti</span>
-                    </div>
+                    <label for="captcha">Captcha</label>
                     <div class="captcha-group-wrapper">
                         <div class="captcha-img-box" id="captcha-img-box" title="Klik untuk muat ulang captcha" onclick="reloadCaptcha()">
                             <img src="{{ route('captcha') }}" alt="Captcha" class="captcha-image" id="captcha-image">
