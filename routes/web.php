@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 // Import Controllers
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\OtpController;
 
 // Landing Page Controllers
 use App\Http\Controllers\LandingPage\LandingpageController;
@@ -45,6 +46,13 @@ use App\Http\Controllers\Admin\Pemilu\LegislatifController;
 //========================================================================
 Route::get('/captcha', [LoginController::class, 'captcha'])->name('captcha');
 Auth::routes(['register' => false]);
+
+//========================================================================
+// ROUTE SISTEM OTP VERIFIKASI 2FA
+//========================================================================
+Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify');
+Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.process');
+Route::post('/resend-otp', [OtpController::class, 'resend'])->name('otp.resend');
 
 
 //========================================================================

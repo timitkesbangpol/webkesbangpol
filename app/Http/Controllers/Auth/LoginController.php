@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
 
 class LoginController extends Controller
 {
@@ -67,12 +71,12 @@ class LoginController extends Controller
     }
 
     /**
-     * Override validasi bawaan untuk menambahkan captcha custom.
+     * Validasi login: HANYA EMAIL TERDAFTAR di tabel users yang diizinkan!
      */
     protected function validateLogin(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email',
+            'email' => 'required|string|email|exists:users,email',
             'password' => 'required|string',
             'captcha' => [
                 'required',
@@ -84,6 +88,57 @@ class LoginController extends Controller
                     }
                 },
             ],
+        ], [
+            'email.exists' => 'Alamat email tidak terdaftar dalam sistem. Hanya akun resmi Bakesbangpol yang dapat masuk.',
         ]);
+    }
+
+    /**
+     * Intersepsi setelah password & captcha benar: JANGAN LANGSUNG LOGIN, TAPI KIRIM OTP!
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        // Logout dulu dari login langsung bawaan Laravel
+        Auth::logout();
+
+        // Simpan state login sementara di session
+        $request->session()->put('otp_auth', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'name' => $user->name,
+            'remember' => $request->filled('remember'),
+            'sent_at' => now()->timestamp,
+        ]);
+
+        // Generate kode OTP 6 digit
+        $otpCode = (string) random_int(100000, 999999);
+        $expiredAt = now()->addMinutes(5);
+
+        // Nonaktifkan OTP lama
+        DB::table('otp_verifikasi')
+            ->where('email', $user->email)
+            ->where('is_used', 0)
+            ->update(['is_used' => 1]);
+
+        // Simpan OTP ke database
+        DB::table('otp_verifikasi')->insert([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'otp_code' => $otpCode,
+            'expired_at' => $expiredAt,
+            'is_used' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Kirim email via Gmail SMTP
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($otpCode, $user->name));
+        } catch (\Exception $e) {
+            \Log::error('Gagal mengirim email OTP Laravel: ' . $e->getMessage());
+        }
+
+        // Arahkan pengguna ke halaman verifikasi OTP
+        return redirect()->route('otp.verify');
     }
 }
