@@ -106,11 +106,17 @@
             <h3 class="text-center mb-0">Sign in to start your session</h3>
 
             {{-- Alert Box Peringatan Kesalahan Login --}}
-            @if ($errors->any())
+            @if ($errors->any() || session('login_error'))
                 <div class="alert alert-danger d-flex align-items-center mt-3 mb-2 p-3 rounded-3 shadow-sm" role="alert" style="background-color: #fee2e2; border: 1.5px solid #ef4444 !important; border-left: 5px solid #dc2626 !important; color: #991b1b; animation: shakeError 0.4s ease-in-out;">
-                    <i class="fas fa-triangle-exclamation fs-4 me-3 flex-shrink-0" style="color: #dc2626;"></i>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2 flex-shrink-0">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
                     <div class="small fw-semibold">
-                        @if ($errors->has('password'))
+                        @if (session('login_error'))
+                            {{ session('login_error') }}
+                        @elseif ($errors->has('password'))
                             {{ $errors->first('password') }}
                         @elseif ($errors->has('email'))
                             {{ $errors->first('email') }}

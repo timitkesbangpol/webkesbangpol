@@ -149,7 +149,7 @@ class LoginController extends Controller
             }
         }
 
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'email' => 'required|string|email|exists:users,email',
             'password' => 'required|string',
             'captcha' => [
@@ -177,6 +177,14 @@ class LoginController extends Controller
             'password.required' => 'Password akun wajib diisi.',
             'captcha.required' => 'Kode captcha wajib diisi.',
         ]);
+
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            $request->session()->flash('login_error', $firstError);
+
+            throw (new \Illuminate\Validation\ValidationException($validator))
+                ->redirectTo(route('login'));
+        }
     }
 
     /**
@@ -184,9 +192,12 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse(Request $request)
     {
+        $message = 'Password yang Anda masukkan salah. Silakan periksa kembali kata sandi akun Anda.';
+        $request->session()->flash('login_error', $message);
+
         throw \Illuminate\Validation\ValidationException::withMessages([
-            'password' => ['Password yang Anda masukkan salah. Silakan periksa kembali kata sandi akun Anda.'],
-        ]);
+            'password' => [$message],
+        ])->redirectTo(route('login'));
     }
 
     /**
