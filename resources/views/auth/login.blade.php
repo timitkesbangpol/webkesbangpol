@@ -46,17 +46,27 @@
 
                 {{-- CAPTCHA --}}
                 <div class="form-group mt-3">
-                    <label for="captcha">Captcha</label>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="captcha-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="captcha" class="mb-0">Kode Verifikasi (Captcha)</label>
+                        <span class="captcha-badge-hint" title="Klik gambar atau tombol untuk ganti kode">Klik untuk ganti</span>
+                    </div>
+                    <div class="captcha-group-wrapper">
+                        <div class="captcha-img-box" id="captcha-img-box" title="Klik untuk muat ulang captcha" onclick="reloadCaptcha()">
                             <img src="{{ route('captcha') }}" alt="Captcha" class="captcha-image" id="captcha-image">
                         </div>
+                        <button type="button" class="btn-captcha-refresh" id="btn-reload-captcha" title="Muat ulang kode captcha" onclick="reloadCaptcha()">
+                            <svg class="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
                         <input type="text" id="captcha" name="captcha"
-                            class="form-control @error('captcha') is-invalid @enderror"
-                            placeholder="Kode captcha" required autocomplete="off">
+                            class="form-control captcha-input-field @error('captcha') is-invalid @enderror"
+                            placeholder="5 kode" maxlength="5" required autocomplete="off">
                     </div>
                     @error('captcha')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -90,3 +100,60 @@
         </div>
     </div>
 @endsection
+
+@push('js')
+<script>
+    function reloadCaptcha() {
+        const btn = document.getElementById('btn-reload-captcha');
+        const img = document.getElementById('captcha-image');
+        const input = document.getElementById('captcha');
+
+        if (btn) btn.classList.add('is-spinning');
+
+        fetch('{{ route("captcha.reload") }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Gagal memuat captcha');
+            return response.json();
+        })
+        .then(data => {
+            if (data.data_url) {
+                img.src = data.data_url;
+            } else if (data.url) {
+                img.src = data.url;
+            }
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        })
+        .catch(err => {
+            img.src = '{{ route("captcha") }}?t=' + Date.now();
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        })
+        .finally(() => {
+            setTimeout(() => {
+                if (btn) btn.classList.remove('is-spinning');
+            }, 600);
+        });
+    }
+
+    // Auto-uppercase saat pengguna mengetik captcha
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('captcha');
+        if (input) {
+            input.addEventListener('input', function () {
+                this.value = this.value.toUpperCase();
+            });
+        }
+    });
+</script>
+@endpush

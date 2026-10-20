@@ -72,39 +72,100 @@
     box-shadow: 0 0 0 3px rgba(180, 13, 20, 0.15);
 }
 
-.captcha-box {
+.captcha-badge-hint {
+    font-size: 0.76rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 999px;
+    user-select: none;
+}
+
+.captcha-group-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin-top: 6px;
     flex-wrap: nowrap;
 }
 
-.captcha-image {
-    border: 1px solid #d8d8d8;
+.captcha-img-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #d8d8d8;
     border-radius: 10px;
-    background: #fff;
-    padding: 6px;
-    min-height: 48px;
-    max-width: 180px;
-    width: 100%;
+    background: #f8fafc;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0;
+    user-select: none;
 }
 
-.captcha-refresh {
-    border: 1px solid #d8d8d8;
-    background: #fff;
-    color: #8C0A0F;
-    border-radius: 10px;
+.captcha-img-box:hover {
+    border-color: #8C0A0F;
+    box-shadow: 0 2px 8px rgba(140, 10, 15, 0.12);
+}
+
+.captcha-image {
+    display: block;
+    width: 150px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.btn-captcha-refresh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
-    font-size: 1.1rem;
+    background: #ffffff;
+    border: 1.5px solid #d8d8d8;
+    border-radius: 10px;
+    color: #8C0A0F;
     cursor: pointer;
     flex-shrink: 0;
+    transition: all 0.2s ease !important;
+    padding: 0;
 }
 
-#captcha {
-    margin-top: 0;
-    max-width: 180px;
+.btn-captcha-refresh:hover {
+    background: #fff5f5;
+    border-color: #8C0A0F;
+    color: #a90e18;
+}
+
+.btn-captcha-refresh:active {
+    transform: scale(0.95);
+}
+
+.btn-captcha-refresh .refresh-icon {
+    display: inline-block;
+    transition: transform 0.4s ease-in-out !important;
+}
+
+@keyframes spinCaptcha {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-captcha-refresh.is-spinning .refresh-icon {
+    animation: spinCaptcha 0.5s linear infinite !important;
+}
+
+.captcha-input-field {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 0.95rem;
+    padding: 8px 10px;
+    text-align: center;
 }
 
 .invalid-feedback {

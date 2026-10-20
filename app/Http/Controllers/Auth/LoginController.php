@@ -22,59 +22,132 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 
-    public function captcha()
+    /**
+     * Generate 5-character distinct code and clean SVG vector captcha
+     */
+    private function generateCaptchaData()
     {
-        $code = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 5));
-        session(['captcha_code' => $code]);
-
-        $width = 220;
-        $height = 70;
-        $image = imagecreatetruecolor($width, $height);
-        $backgroundColor = imagecolorallocate($image, 250, 250, 250);
-        $textColor = imagecolorallocate($image, 180, 13, 20);
-        $lineColor = imagecolorallocate($image, 210, 210, 210);
-        $dotColor = imagecolorallocate($image, 140, 140, 140);
-
-        imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $backgroundColor);
-
-        for ($i = 0; $i < 12; $i++) {
-            imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
+        $chars = '2346789ACDEFGHJKMNPQRTUVWXYZ';
+        $code = '';
+        $charLen = strlen($chars);
+        for ($i = 0; $i < 5; $i++) {
+            $code .= $chars[random_int(0, $charLen - 1)];
         }
 
-        for ($i = 0; $i < 220; $i++) {
-            imagesetpixel($image, mt_rand(0, $width - 1), mt_rand(0, $height - 1), $dotColor);
+        session([
+            'captcha_code' => $code,
+            'captcha_expires_at' => now()->addMinutes(10)->timestamp,
+        ]);
+
+        $width = 160;
+        $height = 46;
+
+        $colors = ['#8C0A0F', '#B40D14', '#1e293b', '#334155', '#991b1b', '#0f172a'];
+
+        // Random background wave lines
+        $paths = '';
+        for ($i = 0; $i < 3; $i++) {
+            $startY = rand(8, 38);
+            $cp1X = rand(25, 65);
+            $cp1Y = rand(4, 42);
+            $cp2X = rand(95, 135);
+            $cp2Y = rand(4, 42);
+            $endY = rand(8, 38);
+            $stroke = (rand(0, 1) === 1) ? 'rgba(180, 13, 20, 0.22)' : 'rgba(100, 116, 139, 0.22)';
+            $paths .= "<path d=\"M 0 $startY C $cp1X $cp1Y, $cp2X $cp2Y, $width $endY\" fill=\"none\" stroke=\"$stroke\" stroke-width=\"1.6\" />";
         }
 
-        $x = 18;
-        $fontPath = public_path('fonts/arial.ttf');
-        for ($i = 0; $i < strlen($code); $i++) {
+        // Random dots
+        $dots = '';
+        for ($i = 0; $i < 30; $i++) {
+            $cx = rand(2, $width - 2);
+            $cy = rand(2, $height - 2);
+            $r = rand(10, 16) / 10;
+            $dots .= "<circle cx=\"$cx\" cy=\"$cy\" r=\"$r\" fill=\"rgba(148, 163, 184, 0.4)\" />";
+        }
+
+        // Characters
+        $charsSvg = '';
+        $spacing = ($width - 24) / 5;
+
+        for ($i = 0; $i < 5; $i++) {
             $char = $code[$i];
-            $y = mt_rand(20, 48);
-            $color = imagecolorallocate($image, mt_rand(100, 180), mt_rand(20, 90), mt_rand(20, 90));
+            $x = 14 + ($i * $spacing) + rand(-2, 2);
+            $y = rand(30, 35);
+            $rot = rand(-12, 12);
+            $color = $colors[array_rand($colors)];
+            $fontSize = rand(23, 26);
 
-            if (function_exists('imagettftext') && is_file($fontPath)) {
-                $angle = mt_rand(-20, 20);
-                imagettftext($image, 24, $angle, $x, $y, $color, $fontPath, $char);
-            } else {
-                imagestring($image, 5, $x, $y, $char, $color);
-            }
-
-            $x += 34 + mt_rand(0, 6);
+            $charsSvg .= "<text x=\"$x\" y=\"$y\" fill=\"$color\" font-size=\"{$fontSize}px\" font-weight=\"800\" font-family=\"'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif\" transform=\"rotate($rot $x $y)\">$char</text>";
         }
 
-        ob_start();
-        imagepng($image);
-        $imageData = ob_get_clean();
-        imagedestroy($image);
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $width . '" height="' . $height . '" viewBox="0 0 ' . $width . ' ' . $height . '">';
+        $svg .= '<defs><linearGradient id="cbg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="50%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient></defs>';
+        $svg .= '<rect width="' . $width . '" height="' . $height . '" rx="6" fill="url(#cbg)" stroke="#cbd5e1" stroke-width="1"/>';
+        $svg .= $dots;
+        $svg .= $paths;
+        $svg .= $charsSvg;
+        $svg .= '</svg>';
 
-        return response($imageData, 200, ['Content-Type' => 'image/png']);
+        return [
+            'code' => $code,
+            'svg' => $svg,
+            'data_url' => 'data:image/svg+xml;base64,' . base64_encode($svg),
+        ];
     }
 
     /**
-     * Validasi login: HANYA EMAIL TERDAFTAR di tabel users yang diizinkan!
+     * Endpoint untuk menampilkan gambar Captcha
+     */
+    public function captcha(Request $request)
+    {
+        // Jika dibuka langsung via address bar browser biasa (bukan tag <img> atau AJAX),
+        // arahkan pengguna langsung ke halaman login agar tidak tampil raw gambar layar hitam
+        $acceptHeader = (string) $request->header('Accept', '');
+        if ($request->acceptsHtml() && str_starts_with($acceptHeader, 'text/html')) {
+            return redirect()->route('login');
+        }
+
+        $data = $this->generateCaptchaData();
+
+        return response($data['svg'], 200, [
+            'Content-Type' => 'image/svg+xml; charset=utf-8',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+        ]);
+    }
+
+    /**
+     * Endpoint AJAX untuk reload Captcha tanpa reload seluruh halaman
+     */
+    public function reloadCaptcha()
+    {
+        $data = $this->generateCaptchaData();
+
+        return response()->json([
+            'status' => 'success',
+            'data_url' => $data['data_url'],
+            'url' => route('captcha') . '?t=' . (int) (microtime(true) * 1000),
+        ], 200, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
+    /**
+     * Validasi login: Email terdaftar, password, dan Captcha
      */
     protected function validateLogin(Request $request)
     {
+        // Bersihkan url.intended jika mengarah ke captcha atau login
+        if ($request->session()->has('url.intended')) {
+            $intended = (string) $request->session()->get('url.intended');
+            if (str_contains($intended, '/captcha') || str_contains($intended, '/login')) {
+                $request->session()->forget('url.intended');
+            }
+        }
+
         $request->validate([
             'email' => 'required|string|email|exists:users,email',
             'password' => 'required|string',
@@ -82,14 +155,23 @@ class LoginController extends Controller
                 'required',
                 'string',
                 function ($attribute, $value, $fail) use ($request) {
-                    $expectedCaptcha = strtoupper((string) $request->session()->get('captcha_code', ''));
-                    if (strtoupper((string) $value) !== $expectedCaptcha) {
-                        $fail('Captcha salah.');
+                    $expectedCaptcha = strtoupper(trim((string) $request->session()->get('captcha_code', '')));
+                    $inputCaptcha = strtoupper(trim((string) $value));
+                    $expiresAt = $request->session()->get('captcha_expires_at');
+
+                    if ($expiresAt && now()->timestamp > $expiresAt) {
+                        $fail('Kode captcha telah kedaluwarsa. Silakan muat ulang captcha.');
+                        return;
+                    }
+
+                    if (empty($expectedCaptcha) || $inputCaptcha !== $expectedCaptcha) {
+                        $fail('Kode captcha tidak sesuai. Silakan coba lagi.');
                     }
                 },
             ],
         ], [
             'email.exists' => 'Alamat email tidak terdaftar dalam sistem. Hanya akun resmi Bakesbangpol yang dapat masuk.',
+            'captcha.required' => 'Kode captcha wajib diisi.',
         ]);
     }
 
@@ -98,6 +180,9 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
+        // Bersihkan url.intended agar tidak pernah terjadi redirect liar ke /captcha atau URL lain
+        $request->session()->forget('url.intended');
+
         // Logout dulu dari login langsung bawaan Laravel
         Auth::logout();
 

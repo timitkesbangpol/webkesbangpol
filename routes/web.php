@@ -45,6 +45,7 @@ use App\Http\Controllers\Admin\Pemilu\LegislatifController;
 // AUTHENTICATION ROUTES
 //========================================================================
 Route::get('/captcha', [LoginController::class, 'captcha'])->name('captcha');
+Route::get('/reload-captcha', [LoginController::class, 'reloadCaptcha'])->name('captcha.reload');
 Auth::routes(['register' => false]);
 
 //========================================================================
