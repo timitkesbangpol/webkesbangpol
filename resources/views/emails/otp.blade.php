@@ -49,10 +49,13 @@
                 </div>
               </div>
 
-              <!-- Peringatan Keamanan -->
-              <div style="background-color: #f8fafc; border-left: 4px solid #ef4444; border-radius: 6px; padding: 12px 16px; margin: 24px 0;">
-                <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.5;">
+              <!-- Peringatan Keamanan & Info Akses -->
+              <div style="background-color: #f8fafc; border-left: 4px solid #ef4444; border-radius: 6px; padding: 12px 16px; margin: 20px 0;">
+                <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569; line-height: 1.5;">
                   <strong style="color: #b91c1c;">Penting:</strong> Jangan berikan kode ini kepada siapa pun, termasuk pihak yang mengatasnamakan Bakesbangpol Kota Bandung.
+                </p>
+                <p style="margin: 0; font-size: 11px; color: #64748b; line-height: 1.5;">
+                  📍 <strong>Detail Permintaan:</strong> IP: <code style="background: #e2e8f0; padding: 2px 5px; border-radius: 4px;">{{ $ipAddress }}</code> | Waktu: {{ $requestTime }}
                 </p>
               </div>
 

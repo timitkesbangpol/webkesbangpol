@@ -52,8 +52,8 @@ Auth::routes(['register' => false]);
 // ROUTE SISTEM OTP VERIFIKASI 2FA
 //========================================================================
 Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify');
-Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.process');
-Route::post('/resend-otp', [OtpController::class, 'resend'])->name('otp.resend');
+Route::post('/verify-otp', [OtpController::class, 'verify'])->middleware('throttle:15,1')->name('otp.process');
+Route::post('/resend-otp', [OtpController::class, 'resend'])->middleware('throttle:4,1')->name('otp.resend');
 
 
 //========================================================================

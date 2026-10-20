@@ -205,20 +205,23 @@ class LoginController extends Controller
             ->where('is_used', 0)
             ->update(['is_used' => 1]);
 
-        // Simpan OTP ke database
+        // Simpan OTP ke database dengan audit trail
         DB::table('otp_verifikasi')->insert([
             'user_id' => $user->id,
             'email' => $user->email,
             'otp_code' => $otpCode,
             'expired_at' => $expiredAt,
             'is_used' => 0,
+            'attempts' => 0,
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // Kirim email via Gmail SMTP
+        // Kirim email OTP
         try {
-            Mail::to($user->email)->send(new SendOtpMail($otpCode, $user->name));
+            Mail::to($user->email)->send(new SendOtpMail($otpCode, $user->name, $request->ip()));
         } catch (\Exception $e) {
             \Log::error('Gagal mengirim email OTP Laravel: ' . $e->getMessage());
         }
