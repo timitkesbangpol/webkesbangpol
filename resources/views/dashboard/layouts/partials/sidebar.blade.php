@@ -104,8 +104,17 @@
                         </a>
                         --}}
                         <a href="{{ route('admin.pemilu-raya.dashboard') }}" class="nav-link {{ Request::is('admin/pemilu-raya*') || Request::is('admin/pilpres*') ? 'active' : '' }}">
-        <i class="fas fa-vote-yea me-2"></i> <span class="sidebar-text">Pemilu Raya</span>
-    </a>
+                            <i class="fas fa-vote-yea me-2"></i> <span class="sidebar-text">Pemilu Raya</span>
+                        </a>
+                    </li>
+                </li>
+
+                <li class="nav-item mt-2">
+                    <span class="sidebar-heading">Pengaturan</span>
+                    <li class="nav-item">
+                        <a href="{{ route('settings.social-media') }}" class="nav-link {{ Request::is('settings/social-media*') ? 'active' : '' }}">
+                            <i class="fas fa-share-alt me-2"></i> <span class="sidebar-text">Media Sosial & Kontak</span>
+                        </a>
                     </li>
                 </li>
 

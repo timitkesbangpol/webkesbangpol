@@ -216,6 +216,12 @@ return [
                 ],
             ],
         ],
+        ['header' => 'PENGATURAN'],
+        [
+            'text' => 'Media Sosial & Kontak',
+            'url' => '/settings/social-media',
+            'icon' => 'fas fa-share-alt',
+        ],
 
     ],
 

@@ -13,17 +13,30 @@
     </div>
   </div>
 
+@php
+  $fAddress = !empty($footerSettings['contact_address']) ? $footerSettings['contact_address'] : 'Jl. Wastukencana No.2, Babakan Ciamis, Kec. Sumur Bandung, Kota Bandung, Jawa Barat 40117';
+  $fWorkingDays = !empty($footerSettings['contact_working_days']) ? $footerSettings['contact_working_days'] : 'Senin - Jumat';
+  $fWorkingHours = !empty($footerSettings['contact_working_hours']) ? $footerSettings['contact_working_hours'] : '08.00 - 16.00 WIB';
+  $fEmail = !empty($footerSettings['contact_email']) ? $footerSettings['contact_email'] : 'bkbp@bandung.go.id';
+  $fInstagram = !empty($footerSettings['social_instagram']) ? $footerSettings['social_instagram'] : 'https://www.instagram.com/bakesbangpolkotabandung/';
+  $fTiktok = !empty($footerSettings['social_tiktok']) ? $footerSettings['social_tiktok'] : 'https://www.tiktok.com/@kesbangpolkotabandung';
+  $fYoutube = $footerSettings['social_youtube'] ?? '';
+  $fFacebook = $footerSettings['social_facebook'] ?? '';
+  $fX = $footerSettings['social_x'] ?? '';
+  $fMapsEmbed = !empty($footerSettings['contact_maps_embed']) ? $footerSettings['contact_maps_embed'] : 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1980.422750703021!2d107.61025168324443!3d-6.909070212796336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e63a6d8df397%3A0xa78857f0be375298!2sKesbangpol%20Kota%20Bandung!5e0!3m2!1sen!2sid!4v1745050653864!5m2!1sen!2sid';
+@endphp
+
   <!-- Baris Kedua -->
   <div class="footer-main">
 
     <!-- Kiri: Alamat dan Jam Kerja -->
     <div class="footer-column footer-left reveal" style="--reveal-delay: 0.2s">
       <h4>Alamat</h4>
-      <p>Jl. Wastukencana No.2, Babakan Ciamis, <br> Kec. Sumur Bandung, Kota Bandung, <br> Jawa Barat 40117</p>
+      <p>{!! nl2br(e($fAddress)) !!}</p>
 
       <div class="working-hours">
         <h4>Jam Kerja</h4>
-        <p><span>Senin - Jumat</span><span class="jam">08.00 - 16.00 WIB</span></p>
+        <p><span>{{ $fWorkingDays }}</span><span class="jam">{{ $fWorkingHours }}</span></p>
       </div>
     </div>
 
@@ -43,10 +56,24 @@
         <div class="footer-divider"></div>
         <h4>Ikuti Kami</h4>
         <div class="footer-social">
-          <a href="mailto:bkbp@bandung.go.id"><i class="fas fa-envelope"></i></a>
-          <a href="https://www.instagram.com/bakesbangpolkotabandung/" target="_blank"><i class="fab fa-instagram"></i></a>
-          <a href="https://www.tiktok.com/@kesbangpolkotabandung" target="_blank"><i class="fab fa-tiktok"></i></a>
-          <a href="#"><i class="fab fa-youtube"></i></a>
+          @if(!empty($fEmail))
+            <a href="mailto:{{ $fEmail }}" title="Kirim Email"><i class="fas fa-envelope"></i></a>
+          @endif
+          @if(!empty($fInstagram))
+            <a href="{{ $fInstagram }}" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+          @endif
+          @if(!empty($fTiktok))
+            <a href="{{ $fTiktok }}" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+          @endif
+          @if(!empty($fYoutube))
+            <a href="{{ $fYoutube }}" target="_blank" rel="noopener noreferrer" title="YouTube"><i class="fab fa-youtube"></i></a>
+          @endif
+          @if(!empty($fFacebook))
+            <a href="{{ $fFacebook }}" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook"></i></a>
+          @endif
+          @if(!empty($fX))
+            <a href="{{ $fX }}" target="_blank" rel="noopener noreferrer" title="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+          @endif
         </div>
       </div>
     </div>
@@ -55,7 +82,7 @@
     <div class="footer-column footer-right reveal" style="--reveal-delay: 0.4s">
       <div class="footer-map">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1980.422750703021!2d107.61025168324443!3d-6.909070212796336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e63a6d8df397%3A0xa78857f0be375298!2sKesbangpol%20Kota%20Bandung!5e0!3m2!1sen!2sid!4v1745050653864!5m2!1sen!2sid"
+          src="{{ $fMapsEmbed }}"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade">
         </iframe>

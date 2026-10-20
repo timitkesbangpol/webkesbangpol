@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 
 // Import Controllers
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OtpController;
 
@@ -187,6 +188,10 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('legislatif', LegislatifController::class);
         });
     });
+
+    // PENGATURAN MEDIA SOSIAL & KONTAK
+    Route::get('/settings/social-media', [SettingController::class, 'socialMedia'])->name('settings.social-media');
+    Route::post('/settings/social-media', [SettingController::class, 'updateSocialMedia'])->name('settings.social-media.update');
 });
 
 //========================================================================
