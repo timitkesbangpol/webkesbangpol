@@ -55,69 +55,69 @@
     
     {{-- Schema.org Structured Data (JSON-LD) untuk Google Search --}}
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "GovernmentOrganization",
-          "@id": "{{ url('/') }}#organization",
-          "name": "Bakesbangpol Kota Bandung",
-          "legalName": "Badan Kesatuan Bangsa dan Politik Kota Bandung",
-          "alternateName": [
-            "Bakesbangpol",
-            "BAKESBANGPOL",
-            "Kesbangpol Kota Bandung",
-            "Badan Kesatuan Bangsa dan Politik Kota Bandung",
-            "Kesbangpol Bandung"
+    {!! json_encode([
+      '@context' => 'https://schema.org',
+      '@graph' => [
+        [
+          '@type' => 'GovernmentOrganization',
+          '@id' => url('/') . '#organization',
+          'name' => 'Bakesbangpol Kota Bandung',
+          'legalName' => 'Badan Kesatuan Bangsa dan Politik Kota Bandung',
+          'alternateName' => [
+            'Bakesbangpol',
+            'BAKESBANGPOL',
+            'Kesbangpol Kota Bandung',
+            'Badan Kesatuan Bangsa dan Politik Kota Bandung',
+            'Kesbangpol Bandung',
           ],
-          "url": "{{ url('/') }}",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "{{ asset('images/component/logoremovebg2.png') }}"
-          },
-          "image": "{{ asset('images/component/logoremovebg2.png') }}",
-          "description": "Portal Resmi Bakesbangpol Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Jl. Wastukencana No.2, Babakan Ciamis, Kec. Sumur Bandung",
-            "addressLocality": "Bandung",
-            "addressRegion": "Jawa Barat",
-            "postalCode": "40117",
-            "addressCountry": "ID"
-          },
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "telephone": "+62-22-4235052",
-            "contactType": "customer service",
-            "areaServed": "ID",
-            "availableLanguage": "Indonesian"
-          },
-          "sameAs": [
-            "https://www.instagram.com/bakesbangpolkotabandung/",
-            "https://www.tiktok.com/@kesbangpolkotabandung",
-            "https://layanan.bandung.go.id"
-          ]
-        },
-        {
-          "@type": "WebSite",
-          "@id": "{{ url('/') }}#website",
-          "url": "{{ url('/') }}",
-          "name": "Bakesbangpol Kota Bandung",
-          "alternateName": [
-            "Bakesbangpol",
-            "BAKESBANGPOL",
-            "Bakesbangpol Bandung",
-            "Kesbangpol Kota Bandung",
-            "Badan Kesatuan Bangsa dan Politik Kota Bandung"
+          'url' => url('/'),
+          'logo' => [
+            '@type' => 'ImageObject',
+            'url' => asset('images/component/logoremovebg2.png'),
           ],
-          "description": "Portal Resmi Bakesbangpol Kota Bandung",
-          "publisher": {
-            "@id": "{{ url('/') }}#organization"
-          },
-          "inLanguage": "id-ID"
-        }
-      ]
-    }
+          'image' => asset('images/component/logoremovebg2.png'),
+          'description' => 'Portal Resmi Bakesbangpol Kota Bandung. Menyajikan informasi berita, program kerja, ormas, dan pelayanan publik.',
+          'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => 'Jl. Wastukencana No.2, Babakan Ciamis, Kec. Sumur Bandung',
+            'addressLocality' => 'Bandung',
+            'addressRegion' => 'Jawa Barat',
+            'postalCode' => '40117',
+            'addressCountry' => 'ID',
+          ],
+          'contactPoint' => [
+            '@type' => 'ContactPoint',
+            'telephone' => '+62-22-4235052',
+            'contactType' => 'customer service',
+            'areaServed' => 'ID',
+            'availableLanguage' => 'Indonesian',
+          ],
+          'sameAs' => [
+            'https://www.instagram.com/bakesbangpolkotabandung/',
+            'https://www.tiktok.com/@kesbangpolkotabandung',
+            'https://layanan.bandung.go.id',
+          ],
+        ],
+        [
+          '@type' => 'WebSite',
+          '@id' => url('/') . '#website',
+          'url' => url('/'),
+          'name' => 'Bakesbangpol Kota Bandung',
+          'alternateName' => [
+            'Bakesbangpol',
+            'BAKESBANGPOL',
+            'Bakesbangpol Bandung',
+            'Kesbangpol Kota Bandung',
+            'Badan Kesatuan Bangsa dan Politik Kota Bandung',
+          ],
+          'description' => 'Portal Resmi Bakesbangpol Kota Bandung',
+          'publisher' => [
+            '@id' => url('/') . '#organization',
+          ],
+          'inLanguage' => 'id-ID',
+        ],
+      ],
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) !!}
     </script>
     @stack('schema')
 
