@@ -228,30 +228,83 @@
                         </div>
                     </div>
                     <div class="card-body p-4">
+                        <div class="row g-4 align-items-stretch">
+                            {{-- SISI KIRI: INFORMASI & FORM INPUT --}}
+                            <div class="col-lg-6 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label class="form-label fw-bold text-gray-800 mb-0" for="contact_maps_embed">
+                                            URL Embed Peta (Iframe Source)
+                                        </label>
+                                        <button type="button" id="btn-default-maps" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" style="font-size: 0.78rem;" title="Kembalikan ke lokasi resmi kantor Bakesbangpol Bandung">
+                                            <i class="fas fa-rotate-left me-1"></i> Gunakan Lokasi Resmi
+                                        </button>
+                                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-gray-700" for="contact_maps_embed">
-                                URL Embed Peta (Iframe Source)
-                            </label>
-                            <input type="text" class="form-control form-control-lg fs-6 @error('contact_maps_embed') is-invalid @enderror"
-                                id="contact_maps_embed" name="contact_maps_embed"
-                                value="{{ old('contact_maps_embed', $settings['contact_maps_embed'] ?? '') }}"
-                                placeholder="https://www.google.com/maps/embed?pb=...">
-                            <div class="form-text small">
-                                <strong>Tips:</strong> Buka Google Maps &rarr; Klik Bagikan &rarr; Pilih "Sematkan peta" &rarr; Salin URL atau paste seluruh kode HTML <code>&lt;iframe&gt;</code> ke sini.
-                            </div>
-                        </div>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text bg-light text-muted">
+                                            <i class="fas fa-link"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-lg fs-6 @error('contact_maps_embed') is-invalid @enderror"
+                                            id="contact_maps_embed" name="contact_maps_embed"
+                                            value="{{ old('contact_maps_embed', $settings['contact_maps_embed'] ?? '') }}"
+                                            placeholder="https://www.google.com/maps/embed?pb=...">
+                                    </div>
+                                    @error('contact_maps_embed')
+                                        <div class="text-danger small mt-1 mb-2">{{ $message }}</div>
+                                    @enderror
 
-                        {{-- Preview Maps --}}
-                        @if(!empty($settings['contact_maps_embed']))
-                            <div class="mt-3">
-                                <label class="form-label fw-semibold text-muted small">Pratinjau Peta Saat Ini:</label>
-                                <div class="ratio ratio-21x9 rounded-3 overflow-hidden border shadow-sm" style="max-height: 220px;">
-                                    <iframe src="{{ $settings['contact_maps_embed'] }}" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                                    <div class="alert alert-light border rounded-3 p-3 mt-3 text-secondary small">
+                                        <div class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                            <i class="fas fa-circle-info text-primary"></i>
+                                            <span>Panduan Cara Ambil Embed Google Maps:</span>
+                                        </div>
+                                        <ol class="ps-3 mb-0 text-muted" style="line-height: 1.6;">
+                                            <li>Buka lokasi kantor di <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="fw-semibold text-primary text-decoration-none">Google Maps <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i></a></li>
+                                            <li>Klik tombol <strong>Bagikan</strong> (Share) &rarr; pilih tab <strong>"Sematkan peta"</strong></li>
+                                            <li>Klik <strong>"Salin HTML"</strong> lalu tempel (paste) ke kolom di atas. Sistem otomatis mengekstrak URL <code>src</code> yang bersih.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2 small text-muted">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1" id="map-status-badge">
+                                            <i class="fas fa-circle-check me-1"></i> Peta Terhubung
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.8rem;">Pratinjau otomatis ter-update saat mengetik</span>
+                                    </div>
+                                    <a id="btn-open-maps" href="{{ !empty($settings['contact_maps_embed']) ? $settings['contact_maps_embed'] : 'https://maps.google.com' }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-primary fw-semibold" style="font-size: 0.82rem;">
+                                        Buka di Google Maps <i class="fas fa-external-link-alt ms-1"></i>
+                                    </a>
                                 </div>
                             </div>
-                        @endif
 
+                            {{-- SISI KANAN: MAP / PRATINJAU PETA --}}
+                            <div class="col-lg-6">
+                                <div class="card h-100 border border-light-subtle rounded-3 overflow-hidden shadow-sm">
+                                    <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+                                        <span class="small fw-bold text-gray-700 d-flex align-items-center gap-2">
+                                            <i class="fas fa-map text-danger"></i> Pratinjau Peta (Live Preview)
+                                        </span>
+                                        <span class="badge bg-secondary-subtle text-dark border font-monospace" style="font-size: 0.72rem;">Footer Portal Publik</span>
+                                    </div>
+                                    <div class="position-relative" style="min-height: 280px; height: 100%; background: #e2e8f0;">
+                                        <iframe id="maps-iframe-preview"
+                                            src="{{ !empty($settings['contact_maps_embed']) ? $settings['contact_maps_embed'] : 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1980.422750703021!2d107.61025168324443!3d-6.909070212796336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e63a6d8df397%3A0xa78857f0be375298!2sKesbangpol%20Kota%20Bandung!5e0!3m2!1sen!2sid!4v1745050653864!5m2!1sen!2sid' }}"
+                                            style="width: 100%; height: 100%; min-height: 280px; border: 0;"
+                                            allowfullscreen=""
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer-when-downgrade">
+                                        </iframe>
+                                        <div id="maps-placeholder" class="position-absolute top-0 start-0 w-100 h-100 d-none flex-column align-items-center justify-content-center text-muted" style="background: #f8fafc;">
+                                            <i class="fas fa-map-location-dot fs-1 mb-2 text-secondary opacity-50"></i>
+                                            <span class="small fw-semibold">Belum ada URL embed peta yang valid</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -268,3 +321,80 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const defaultEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1980.422750703021!2d107.61025168324443!3d-6.909070212796336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e63a6d8df397%3A0xa78857f0be375298!2sKesbangpol%20Kota%20Bandung!5e0!3m2!1sen!2sid!4v1745050653864!5m2!1sen!2sid';
+    const mapsInput = document.getElementById('contact_maps_embed');
+    const iframePreview = document.getElementById('maps-iframe-preview');
+    const placeholder = document.getElementById('maps-placeholder');
+    const btnDefault = document.getElementById('btn-default-maps');
+    const btnOpenMaps = document.getElementById('btn-open-maps');
+    const statusBadge = document.getElementById('map-status-badge');
+
+    function cleanAndSetMapUrl(val) {
+        if (!val) {
+            if (iframePreview) iframePreview.classList.add('d-none');
+            if (placeholder) placeholder.classList.remove('d-none');
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-secondary-subtle text-muted border border-secondary-subtle rounded-pill px-2 py-1';
+                statusBadge.innerHTML = '<i class="fas fa-circle-xmark me-1"></i> Tidak Ada Peta';
+            }
+            return;
+        }
+
+        let cleanUrl = val.trim();
+        // Otomatis ekstrak jika pengguna mem-paste tag <iframe> lengkap
+        const match = cleanUrl.match(/src=["']([^"']+)["']/);
+        if (match && match[1]) {
+            cleanUrl = match[1];
+            mapsInput.value = cleanUrl;
+        }
+
+        if (cleanUrl && cleanUrl.startsWith('http')) {
+            if (iframePreview) {
+                iframePreview.src = cleanUrl;
+                iframePreview.classList.remove('d-none');
+            }
+            if (placeholder) placeholder.classList.add('d-none');
+            if (btnOpenMaps) btnOpenMaps.href = cleanUrl;
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1';
+                statusBadge.innerHTML = '<i class="fas fa-circle-check me-1"></i> Peta Terhubung';
+            }
+        } else {
+            if (iframePreview) iframePreview.classList.add('d-none');
+            if (placeholder) placeholder.classList.remove('d-none');
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1';
+                statusBadge.innerHTML = '<i class="fas fa-triangle-exclamation me-1"></i> URL Tidak Valid';
+            }
+        }
+    }
+
+    if (mapsInput) {
+        // Cek inisial saat halaman dimuat
+        cleanAndSetMapUrl(mapsInput.value);
+
+        mapsInput.addEventListener('input', function () {
+            cleanAndSetMapUrl(this.value);
+        });
+
+        mapsInput.addEventListener('paste', function () {
+            setTimeout(() => cleanAndSetMapUrl(mapsInput.value), 60);
+        });
+    }
+
+    if (btnDefault) {
+        btnDefault.addEventListener('click', function () {
+            if (mapsInput) {
+                mapsInput.value = defaultEmbedUrl;
+                cleanAndSetMapUrl(defaultEmbedUrl);
+                mapsInput.focus();
+            }
+        });
+    }
+});
+</script>
+@endpush
