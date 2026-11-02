@@ -28,4 +28,3 @@ if (file_exists(__DIR__.'/../bootstrap/app.php')) {
 }
 
 $app->handleRequest(Request::capture());
-

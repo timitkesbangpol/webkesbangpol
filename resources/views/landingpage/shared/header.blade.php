@@ -201,6 +201,7 @@
     const nav = document.getElementById('mainNav');
 
     window.addEventListener('scroll', () => {
+        if (document.body.classList.contains('menu-open')) return;
         if (!ticking) {
             window.requestAnimationFrame(() => {
                 const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
