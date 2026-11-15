@@ -35,15 +35,24 @@ class StrukturController extends Controller
             'nodes.*.id'        => 'required|integer|exists:strukturors,id',
             'nodes.*.x'         => 'required|numeric',
             'nodes.*.y'         => 'required|numeric',
-            'nodes.*.parent_id' => 'nullable|integer|exists:strukturors,id',
+            'nodes.*.parent_id' => 'nullable',
             'nodes.*.color'     => 'nullable|string|max:50',
         ]);
 
         foreach ($data['nodes'] as $nodeData) {
+            $parentId = !empty($nodeData['parent_id']) && is_numeric($nodeData['parent_id']) && (int) $nodeData['parent_id'] > 0
+                ? (int) $nodeData['parent_id']
+                : null;
+
+            // Ensure parent exists and is not self
+            if ($parentId && ($parentId === (int) $nodeData['id'] || !Strukturor::where('id', $parentId)->exists())) {
+                $parentId = null;
+            }
+
             $updateData = [
                 'x'         => $nodeData['x'],
                 'y'         => $nodeData['y'],
-                'parent_id' => $nodeData['parent_id'] ?? null,
+                'parent_id' => $parentId,
             ];
             if (!empty($nodeData['color'])) {
                 $updateData['color'] = $nodeData['color'];
@@ -128,7 +137,7 @@ class StrukturController extends Controller
      */
     public function updateBox(Request $request, $id)
     {
-        if ($request->has('parent_id') && ($request->parent_id === '' || $request->parent_id === 'null')) {
+        if ($request->has('parent_id') && ($request->parent_id === '' || $request->parent_id === 'null' || (int)$request->parent_id === (int)$id)) {
             $request->merge(['parent_id' => null]);
         }
 

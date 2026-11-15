@@ -10,6 +10,7 @@
     }
     @media (max-width: 576px) {
         .nav-wrapper {
+            
             padding-top: 12px !important;
         }
     }

@@ -1760,6 +1760,29 @@ document.addEventListener('DOMContentLoaded', function() {
     let pendingImageFile = null;
     let removeImageFlag = false;
 
+    function populateParentDropdown(excludeNodeId, selectedParentId) {
+        const select = document.getElementById('edit-parent-inline');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Root (Tanpa Atasan) --</option>';
+        nodes.forEach(function(n) {
+            if (n.id === excludeNodeId) return; // Tidak boleh atasan diri sendiri
+            if (excludeNodeId && wouldCreateCycle(excludeNodeId, n.id)) return; // Tidak boleh turunan sendiri
+            const opt = document.createElement('option');
+            opt.value = n.id;
+            const label = n.jabatan + (n.nama && n.nama !== '-' ? ' - ' + n.nama : '');
+            opt.textContent = label;
+            if (selectedParentId !== undefined && selectedParentId !== null && String(n.id) === String(selectedParentId)) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        });
+        if (selectedParentId) {
+            select.value = String(selectedParentId);
+        } else {
+            select.value = '';
+        }
+    }
+
     function updatePanel(id) {
         const node = getNodeById(id); if (!node) return;
         document.getElementById('panel-multi-select-info').style.display = 'none';
@@ -1769,7 +1792,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit-pangkat-inline').value  = (node.pangkat  && node.pangkat  !== '-') ? node.pangkat : '';
         document.getElementById('edit-golongan-inline').value = (node.golongan && node.golongan !== '-') ? node.golongan : '';
         document.getElementById('edit-jabatan-inline').value  = node.jabatan || '';
-        document.getElementById('edit-parent-inline').value   = node.parent_id || '';
+        populateParentDropdown(node.id, node.parent_id);
         document.getElementById('edit-x-inline').textContent  = node.x || 0;
         document.getElementById('edit-y-inline').textContent  = node.y || 0;
         colorSwatches.forEach(s => s.classList.toggle('active', s.dataset.color === (node.color || 'blue')));
@@ -2342,38 +2365,60 @@ document.addEventListener('DOMContentLoaded', function() {
                     var childNode = getNodeById(childId);
                     if (childNode) {
                         pushUndo();
-                        if ((draggingEndpointSide === 'to' && targetNodeId !== childId) || (draggingEndpointSide === 'from' && targetNodeId !== oldParentId)) {
-                            // Endpoint dragged to a DIFFERENT node → reconnect!
+                        if (draggingEndpointSide === 'from' && targetNodeId !== oldParentId) {
+                            // Endpoint dragged to a DIFFERENT node → reconnect parent!
                             if (!wouldCreateCycle(childId, targetNodeId)) {
                                 var oldKey = oldParentId + '-' + childId;
-                                // Save old connector data before deleting
                                 var oldWps = connectorWaypoints.get(oldKey);
                                 var oldCol = connectorColors.get(oldKey);
                                 var oldSty = connectorStyles.get(oldKey);
                                 var oldPorts = connectorPorts.get(oldKey);
-                                // Delete old
                                 connectorWaypoints.delete(oldKey);
                                 connectorColors.delete(oldKey);
                                 connectorStyles.delete(oldKey);
                                 connectorPorts.delete(oldKey);
-                                // Set new parent
+
                                 childNode.parent_id = targetNodeId;
-                                // Create new connector data with migrated settings
                                 var newKey = targetNodeId + '-' + childId;
                                 if (oldWps) connectorWaypoints.set(newKey, oldWps.slice());
                                 if (oldCol) connectorColors.set(newKey, oldCol);
                                 if (oldSty) connectorStyles.set(newKey, Object.assign({}, oldSty));
-                                // Preserve original ports where possible
-                                if (draggingEndpointSide === 'from') {
-                                    var origToPort = (oldPorts && oldPorts.toPort) || 't';
-                                    connectorPorts.set(newKey, { fromPort: targetPort, toPort: origToPort });
-                                } else {
+                                var origToPort = (oldPorts && oldPorts.toPort) || 't';
+                                connectorPorts.set(newKey, { fromPort: targetPort, toPort: origToPort });
+                                selectedConnectorKey = newKey;
+                                showToast('Atasan dipindahkan ke node lain', 'success');
+                                renderNodes();
+                            } else {
+                                showToast('Sirkular! Tidak bisa memindahkan ke sini', 'error');
+                                renderConnectors();
+                            }
+                        } else if (draggingEndpointSide === 'to' && targetNodeId !== childId) {
+                            // Endpoint dragged to a DIFFERENT node → reconnect child!
+                            if (!wouldCreateCycle(targetNodeId, oldParentId)) {
+                                var oldKey = oldParentId + '-' + childId;
+                                var oldWps = connectorWaypoints.get(oldKey);
+                                var oldCol = connectorColors.get(oldKey);
+                                var oldSty = connectorStyles.get(oldKey);
+                                var oldPorts = connectorPorts.get(oldKey);
+                                connectorWaypoints.delete(oldKey);
+                                connectorColors.delete(oldKey);
+                                connectorStyles.delete(oldKey);
+                                connectorPorts.delete(oldKey);
+
+                                var targetChild = getNodeById(targetNodeId);
+                                if (targetChild) {
+                                    childNode.parent_id = null;
+                                    targetChild.parent_id = oldParentId;
+                                    var newKey = oldParentId + '-' + targetNodeId;
+                                    if (oldWps) connectorWaypoints.set(newKey, oldWps.slice());
+                                    if (oldCol) connectorColors.set(newKey, oldCol);
+                                    if (oldSty) connectorStyles.set(newKey, Object.assign({}, oldSty));
                                     var origFromPort = (oldPorts && oldPorts.fromPort) || 'b';
                                     connectorPorts.set(newKey, { fromPort: origFromPort, toPort: targetPort });
+                                    selectedConnectorKey = newKey;
+                                    showToast('Bawahan dipindahkan ke node lain', 'success');
+                                    renderNodes();
                                 }
-                                selectedConnectorKey = newKey;
-                                showToast('Koneksi dipindahkan ke node lain', 'success');
-                                renderNodes();
                             } else {
                                 showToast('Sirkular! Tidak bisa memindahkan ke sini', 'error');
                                 renderConnectors();
@@ -2436,21 +2481,43 @@ document.addEventListener('DOMContentLoaded', function() {
             if (target && target.id !== connectFromId) {
                 const cn = getNodeById(connectFromId);
                 if (cn) {
-                    if (!wouldCreateCycle(connectFromId, target.id)) {
-                        cn.parent_id = target.id;
-                        const key = target.id + '-' + connectFromId;
-                        connectorPorts.set(key, { fromPort: connectFromPort || 'b', toPort: targetPort || 't' });
+                    pushUndo();
+                    // Menentukan arah relasi:
+                    // Jika ditarik dari port atas ('t') cn -> cn adalah bawahan, target adalah atasan
+                    // Jika ditarik dari port bawah ('b') / sisi lain -> cn adalah atasan, target adalah bawahan
+                    let parentNode, childNode, pPort, cPort;
+                    if (connectFromPort === 't') {
+                        parentNode = target;
+                        childNode = cn;
+                        pPort = targetPort || 'b';
+                        cPort = connectFromPort;
+                    } else {
+                        parentNode = cn;
+                        childNode = target;
+                        pPort = connectFromPort || 'b';
+                        cPort = targetPort || 't';
+                    }
+
+                    if (!wouldCreateCycle(childNode.id, parentNode.id)) {
+                        childNode.parent_id = parentNode.id;
+                        const key = parentNode.id + '-' + childNode.id;
+                        connectorPorts.set(key, { fromPort: pPort, toPort: cPort });
                         renderConnectors();
-                        if (selectedNodeId === connectFromId) document.getElementById('edit-parent-inline').value = target.id;
-                        showToast('Berhasil menghubungkan', 'success');
+                        if (selectedNodeId === childNode.id) {
+                            populateParentDropdown(childNode.id, childNode.parent_id);
+                        }
+                        showToast('Berhasil menghubungkan: ' + parentNode.jabatan + ' → ' + childNode.jabatan, 'success');
                         persistConnectorData();
-                    } else showToast('Sirkular!', 'error');
+                    } else {
+                        showToast('Sirkular! Tidak bisa menghubungkan hirarki melingkar', 'error');
+                    }
                 }
             } else if (!target) {
                 const r = body.getBoundingClientRect();
                 addNode((e.clientX - panX - r.left) / zoomLevel - 100, (e.clientY - panY - r.top) / zoomLevel - 30, connectFromId);
             }
             cleanupConnect();
+            return;
         }
     });
 
@@ -2762,6 +2829,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!selectedNodeId) { deselectAll(); panel.classList.remove('open'); }
         }
         renderNodes();
+        if (selectedNodeId) {
+            const sn = getNodeById(selectedNodeId);
+            if (sn) populateParentDropdown(sn.id, sn.parent_id);
+        }
         if (id > 0) fetch('{{ url('/strukturors-builder/delete') }}/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' } }).catch(function() {});
         showToast('Kotak berhasil dihapus', 'info');
     }
@@ -2797,7 +2868,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('pangkat', node.pangkat || '-');
         formData.append('x', node.x || 0);
         formData.append('y', node.y || 0);
-        if (parentId) formData.append('parent_id', parentId);
+        formData.append('parent_id', (parentId !== null && parentId !== undefined && parentId !== '' && parentId > 0) ? parentId : '');
         if (node.color) formData.append('color', node.color);
 
         if (imageFile) {
@@ -2824,13 +2895,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     const oid = node.id, origPid = nodes[idx].parent_id;
                     nodes[idx] = Object.assign({}, nodes[idx], d.node);
                     if (origPid < 0 && d.node.parent_id === null) nodes[idx].parent_id = origPid;
+
+                    // Remap children and connector keys if temporary ID changed to database ID
+                    if (oid !== d.node.id) {
+                        nodes.forEach(function(n) {
+                            if (n.parent_id === oid) n.parent_id = d.node.id;
+                        });
+                        function remapK(map) {
+                            const entries = [...map.entries()];
+                            entries.forEach(function([k, v]) {
+                                const p = k.split('-');
+                                if (parseInt(p[0]) === oid || parseInt(p[1]) === oid) {
+                                    map.delete(k);
+                                    const newK = (parseInt(p[0]) === oid ? d.node.id : p[0]) + '-' + (parseInt(p[1]) === oid ? d.node.id : p[1]);
+                                    map.set(newK, v);
+                                }
+                            });
+                        }
+                        remapK(connectorWaypoints);
+                        remapK(connectorColors);
+                        remapK(connectorStyles);
+                        remapK(connectorPorts);
+                    }
+
                     if (selectedNodeId === oid && d.node.id !== oid) {
                         selectedNodeId = d.node.id;
                         selectedNodeIds.delete(oid);
                         selectedNodeIds.add(d.node.id);
                     }
                     renderNodes();
-                    if (selectedNodeId === d.node.id) selectNode(d.node.id, false);
+                    if (selectedNodeId === d.node.id) {
+                        selectNode(d.node.id, false);
+                        populateParentDropdown(d.node.id, nodes[idx].parent_id);
+                    }
                     return { oldId: oid, newId: d.node.id };
                 }
             }
@@ -2863,6 +2960,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const updatedNodes = nodes.map(function(n) {
                 let pid = n.parent_id;
                 if (pid && idMap[pid]) pid = idMap[pid];
+                if (pid && pid <= 0) pid = null;
                 return {
                     id: n.id,
                     x: n.x || 0,
