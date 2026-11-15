@@ -746,6 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let draggingSegInsertAt = null; // integer index, or -1 for 'default-mid'
     let segDragHasMoved = false;
     let segDragClientStart = { x: 0, y: 0 };
+    let segDragStartedWp = false;
 
     // Connector long-press (color picker)
     let connectorHoldTimer = null, holdConnectorKey = null;
@@ -1125,14 +1126,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== CONNECTOR MATH =====
-    // Read actual node dimensions from DOM (pixel perfect)
+    // Read actual node dimensions from DOM (pixel perfect, resistant to zoom scaling)
     function getNodeRect(node) {
         var el = getNodeEl(node.id);
         var w = 288, h = 96;
         if (el) {
-            var rect = el.getBoundingClientRect();
-            if (rect.width > 0)  w = rect.width / zoomLevel;
-            if (rect.height > 0) h = rect.height / zoomLevel;
+            if (el.offsetWidth > 0)  w = el.offsetWidth;
+            else if (el.getBoundingClientRect().width > 0) w = el.getBoundingClientRect().width / zoomLevel;
+            if (el.offsetHeight > 0) h = el.offsetHeight;
+            else if (el.getBoundingClientRect().height > 0) h = el.getBoundingClientRect().height / zoomLevel;
         }
         return { x: node.x || 0, y: node.y || 0, w: w, h: h };
     }
@@ -1469,12 +1471,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 vp.style.filter = 'drop-shadow(0 0 3px ' + finalColor + '99) drop-shadow(0 0 8px ' + finalColor + '44)';
                 vp.style.transition = 'none';
             }
+            if (isDraggingEndpoint && key === draggingEndpointKey) {
+                vp.style.opacity = '0.2';
+                sh.style.opacity = '0';
+            }
             vp.style.pointerEvents = 'none';
             svgEl.appendChild(vp);
 
             // Draw.io style: Arrowhead at child (target) end
             var arrowPoly = drawArrowhead(x2, y2, td, isSelected ? 2.5 : 1.8, finalColor);
-            if (arrowPoly) svgEl.appendChild(arrowPoly);
+            if (arrowPoly) {
+                if (isDraggingEndpoint && key === draggingEndpointKey) arrowPoly.style.opacity = '0.2';
+                svgEl.appendChild(arrowPoly);
+            }
 
             // Hit area (transparent wide path for click events) — draw.io style hover
             var hp = mkSvg('path');
@@ -1507,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Draw.io style: render endpoint handles for selected connector — HTML divs with high z-index
         var oldEpDivs = stage.querySelectorAll('.endpoint-handle-div');
         oldEpDivs.forEach(function(d) { d.remove(); });
-        if (selectedConnectorKey) {
+        if (selectedConnectorKey && (!isDraggingEndpoint || selectedConnectorKey !== draggingEndpointKey)) {
             var epKey = selectedConnectorKey;
             var epParts = epKey.split('-');
             if (epParts.length === 2) {
@@ -1597,64 +1606,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return { x1: x1, y1: y1, x2: x2, y2: y2, fd: fd, td: td };
     }
 
-    // Draw.io-style axis-constrained orthogonal segment shift with magnetic snapping
-    function shiftOrthogonalSegment(key, segIdx, mouseStagePos) {
-        var geom = getConnectorGeometry(key);
-        if (!geom) return;
-        var { x1, y1, x2, y2, fd, td } = geom;
-        var wps = (connectorWaypoints.get(key) || []).map(function(p) { return { x: p.x, y: p.y }; });
-        var pts = getOrthogonalPts(x1, y1, x2, y2, fd, td, wps);
-
-        if (segIdx < 0 || segIdx >= pts.length - 1) return;
-
-        var pA = pts[segIdx], pB = pts[segIdx + 1];
-        var isH = Math.abs(pA.y - pB.y) < 1.5; // horizontal segment → constrain to Y movement
-        var isV = Math.abs(pA.x - pB.x) < 1.5; // vertical segment   → constrain to X movement
-
-        if (!isH && !isV) return;
-
-        // The free coordinate of this segment (the one we want to change)
-        var segCoord = isH ? pA.y : pA.x;
-        var newVal;
-        if (isH) {
-            var wpSnap = computeWaypointSnap(pA.x, mouseStagePos.y, key);
-            newVal = wpSnap.snapY !== null ? Math.round(mouseStagePos.y + wpSnap.snapY) : snapV(Math.round(mouseStagePos.y));
-            wpAlignGuides = wpSnap.guides;
-            renderWaypointGuides();
-        } else {
-            var wpSnap = computeWaypointSnap(mouseStagePos.x, pA.y, key);
-            newVal = wpSnap.snapX !== null ? Math.round(mouseStagePos.x + wpSnap.snapX) : snapV(Math.round(mouseStagePos.x));
-            wpAlignGuides = wpSnap.guides;
-            renderWaypointGuides();
-        }
-
-        // Find ALL waypoints whose free-coordinate matches this segment → update them
-        var changed = false;
-        wps.forEach(function(wp) {
-            var wpCoord = isH ? wp.y : wp.x;
-            if (Math.abs(wpCoord - segCoord) < 2) {
-                if (isH) wp.y = newVal;
-                else     wp.x = newVal;
-                changed = true;
-            }
-        });
-
-        if (!changed) {
-            // No matching waypoint → create one at the middle of the segment
-            var midX = Math.round((pA.x + pB.x) / 2);
-            var midY = Math.round((pA.y + pB.y) / 2);
-            var newWp;
-            if (isH) newWp = { x: midX, y: newVal };
-            else     newWp = { x: newVal, y: midY };
-            // Insert at position corresponding to segment index
-            wps.splice(Math.max(0, segIdx), 0, newWp);
-        }
-
-        connectorWaypoints.set(key, wps);
-        renderConnectors();
-    }
 
     function renderWaypointHandles(key, x1, y1, x2, y2, wps, fd, td, styleType) {
+        if (isDraggingEndpoint && draggingEndpointKey === key) return;
         var hasWps = wps && wps.length > 0;
         var pts = allPts(x1, y1, x2, y2, wps, fd, td, styleType);
 
@@ -1994,15 +1948,32 @@ document.addEventListener('DOMContentLoaded', function() {
         endpointDragStartClientX = e.clientX;
         endpointDragStartClientY = e.clientY;
         endpointHoverPort = null;
-        // Get the fixed end (the opposite side of the connector)
+        // Get the fixed end (the opposite side of the connector) from actual anchored port geometry
         var epParts = draggingEndpointKey.split('-');
         if (epParts.length === 2) {
-            var fixedId = draggingEndpointSide === 'from' ? parseInt(epParts[1]) : parseInt(epParts[0]);
-            var fixedNode = getNodeById(fixedId);
-            if (fixedNode) {
-                var fixedRect = getNodeRect(fixedNode);
-                endpointDragOrigFixedX = fixedRect.x + fixedRect.w / 2;
-                endpointDragOrigFixedY = fixedRect.y + fixedRect.h / 2;
+            var pNode = getNodeById(parseInt(epParts[0])), cNode = getNodeById(parseInt(epParts[1]));
+            if (pNode && cNode) {
+                var pp = getNodePorts(pNode), cp = getNodePorts(cNode);
+                var uPorts = connectorPorts.get(draggingEndpointKey);
+                var fd = (uPorts && uPorts.fromPort) || getBestPorts(pNode, cNode).fd;
+                var td = (uPorts && uPorts.toPort) || getBestPorts(pNode, cNode).td;
+                if (draggingEndpointSide === 'from') {
+                    // Moving parent end -> fixed end is at child's toPort
+                    endpointDragOrigFixedX = cp[td].x;
+                    endpointDragOrigFixedY = cp[td].y;
+                } else {
+                    // Moving child end -> fixed end is at parent's fromPort
+                    endpointDragOrigFixedX = pp[fd].x;
+                    endpointDragOrigFixedY = pp[fd].y;
+                }
+            } else {
+                var fixedId = draggingEndpointSide === 'from' ? parseInt(epParts[1]) : parseInt(epParts[0]);
+                var fixedNode = getNodeById(fixedId);
+                if (fixedNode) {
+                    var fixedRect = getNodeRect(fixedNode);
+                    endpointDragOrigFixedX = fixedRect.x + fixedRect.w / 2;
+                    endpointDragOrigFixedY = fixedRect.y + fixedRect.h / 2;
+                }
             }
         }
         // Create temp line for drag preview
@@ -2013,6 +1984,9 @@ document.addEventListener('DOMContentLoaded', function() {
         endpointTempLine.setAttribute('y2', endpointDragOrigFixedY);
         endpointTempLine.setAttribute('class', 'endpoint-temp-line');
         svgEl.appendChild(endpointTempLine);
+
+        // Ghost original connector while dragging endpoint
+        renderConnectors();
     });
 
     svgEl.addEventListener('mousedown', function(e) {
@@ -2035,6 +2009,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const si = e.target.getAttribute('data-seg-idx');
             draggingSegInsertAt = si === 'default-mid' ? -1 : parseInt(si);
             segDragHasMoved = false;
+            segDragStartedWp = false;
             segDragClientStart = { x: e.clientX, y: e.clientY };
             return;
         }
@@ -2211,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const wps = connectorWaypoints.get(draggingWpKey);
             if (wps && wps[draggingWpIdx] !== undefined) {
                 const s = clientToStage(e.clientX, e.clientY);
+                showCoordTooltip(e.clientX, e.clientY, s.x, s.y, draggingWpKey);
                 // Compute magnetic snap directly from stage cursor position
                 var wpSnap = computeWaypointSnap(s.x, s.y, draggingWpKey);
                 var alignedX = wpSnap.snapX !== null 
@@ -2219,6 +2195,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 var alignedY = wpSnap.snapY !== null 
                     ? Math.round(s.y + wpSnap.snapY) 
                     : snapV(Math.round(s.y));
+                // Clamp within canvas stage bounds (0-4000, 0-3000)
+                alignedX = Math.max(0, Math.min(4000, alignedX));
+                alignedY = Math.max(0, Math.min(3000, alignedY));
                 wps[draggingWpIdx] = { x: alignedX, y: alignedY };
                 wpAlignGuides = wpSnap.guides;
                 renderConnectors();
@@ -2233,21 +2212,38 @@ document.addEventListener('DOMContentLoaded', function() {
             // Grid snap fallback (kelipatan SNAP)
             var gx = snapV(Math.round(s.x));
             var gy = snapV(Math.round(s.y));
-            // Find nearest port on ANY node — larger snap radius for magnetic feel
+            // Find nearest port on ANY node — scaled by zoom level so it feels consistent at any zoom!
             var closestPort = null;
-            var snapDist = 60; // Magnetic snap radius (px in stage coords)
-            nodes.forEach(function(n) {
-                var ports = getNodePorts(n);
-                Object.keys(ports).forEach(function(pName) {
-                    var p = ports[pName];
-                    var dist = Math.hypot(p.x - s.x, p.y - s.y);
-                    if (dist < snapDist) {
-                        snapDist = dist;
-                        closestPort = { nodeId: n.id, portName: pName, x: p.x, y: p.y };
+            var screenSnapRadiusPx = 45; // 45 pixels on user's actual screen
+            var snapDist = Math.max(70, screenSnapRadiusPx / zoomLevel);
+
+            // First priority: check if cursor is pointing directly at any node!
+            var hoveredNode = findNodeAt(e.clientX, e.clientY);
+            if (hoveredNode) {
+                var hPorts = getNodePorts(hoveredNode);
+                var bestD = Infinity;
+                Object.keys(hPorts).forEach(function(pName) {
+                    var p = hPorts[pName];
+                    var d = Math.hypot(p.x - s.x, p.y - s.y);
+                    if (d < bestD) {
+                        bestD = d;
+                        closestPort = { nodeId: hoveredNode.id, portName: pName, x: p.x, y: p.y };
                     }
                 });
-            });
-            // Magnetic snap: if near a port, snap to port; else fallback to grid
+            } else {
+                nodes.forEach(function(n) {
+                    var ports = getNodePorts(n);
+                    Object.keys(ports).forEach(function(pName) {
+                        var p = ports[pName];
+                        var dist = Math.hypot(p.x - s.x, p.y - s.y);
+                        if (dist < snapDist) {
+                            snapDist = dist;
+                            closestPort = { nodeId: n.id, portName: pName, x: p.x, y: p.y };
+                        }
+                    });
+                });
+            }
+
             var snapX = s.x, snapY = s.y;
             var isSnapped = false;
             if (closestPort) {
@@ -2257,20 +2253,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 endpointHoverPort = closestPort;
             } else {
                 endpointHoverPort = null;
-                // Fallback ke grid snap
                 snapX = gx;
                 snapY = gy;
             }
-            // Update temp line — hijau saat snapped (draw.io style), biru saat grid-snap
+            snapX = Math.max(0, Math.min(4000, snapX));
+            snapY = Math.max(0, Math.min(3000, snapY));
+
             if (endpointTempLine) {
                 endpointTempLine.setAttribute('x1', endpointDragOrigFixedX);
                 endpointTempLine.setAttribute('y1', endpointDragOrigFixedY);
                 endpointTempLine.setAttribute('x2', snapX);
                 endpointTempLine.setAttribute('y2', snapY);
-                // Visual: hijau terang = snapped to port, biru = grid fallback
                 if (isSnapped) {
                     endpointTempLine.classList.add('endpoint-temp-line-snapped');
-                    // Hijau cerah kyk draw.io
                     endpointTempLine.setAttribute('stroke', '#22c55e');
                     endpointTempLine.setAttribute('stroke-width', '3.5');
                     endpointTempLine.style.filter = 'drop-shadow(0 0 8px rgba(34,197,94,0.6))';
@@ -2289,7 +2284,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 hl.setAttribute('cx', closestPort.x); hl.setAttribute('cy', closestPort.y);
                 hl.setAttribute('rx', '20'); hl.setAttribute('ry', '20');
                 hl.setAttribute('class', 'port-highlight-oval');
-                // Green highlight like draw.io — pakai inline style biar ga ditimpa CSS class
                 hl.style.fill = 'rgba(34,197,94,0.25)';
                 hl.style.stroke = '#22c55e';
                 hl.style.strokeWidth = '2.5';
@@ -2299,36 +2293,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // □ Segment drag — draw.io style axis-constrained shift + tooltip koordinat
+        // □ Segment drag — draw.io style midpoint waypoint insert
         if (isDraggingSegment && draggingSegKey) {
             const dist = Math.hypot(e.clientX - segDragClientStart.x, e.clientY - segDragClientStart.y);
             if (dist > 3) {
                 segDragHasMoved = true;
                 const s = clientToStage(e.clientX, e.clientY);
-                // Tampilkan tooltip koordinat (draw.io style)
                 showCoordTooltip(e.clientX, e.clientY, s.x, s.y, draggingSegKey);
-                const cStyle = getConnectorStyle(draggingSegKey);
-                if (cStyle.type !== 'orthogonal') {
-                    // straight/curved: free waypoint insert (old behavior)
-                    if (!connectorWaypoints.has(draggingSegKey)) connectorWaypoints.set(draggingSegKey, []);
-                    const wps = connectorWaypoints.get(draggingSegKey);
-                    const insertAt = draggingSegInsertAt < 0 ? 0 : draggingSegInsertAt;
-                    if (!segDragStartedWp) {
-                        // Snap to grid on initial insertion (draw.io style)
-                        wps.splice(insertAt, 0, { x: snapV(Math.round(s.x)), y: snapV(Math.round(s.y)) });
-                        segDragStartedWp = true;
-                        draggingWpIdx = insertAt;
-                        draggingWpKey = draggingSegKey;
-                        isDraggingWaypoint = true;
-                        isDraggingSegment  = false;
-                    } else if (wps[draggingWpIdx] !== undefined) {
-                        wps[draggingWpIdx] = { x: snapV(Math.round(s.x)), y: snapV(Math.round(s.y)) };
-                    }
-                    renderConnectors();
-                } else {
-                    // orthogonal: axis-constrained segment shift (draw.io style)
-                    shiftOrthogonalSegment(draggingSegKey, draggingSegInsertAt < 0 ? 0 : draggingSegInsertAt, s);
+
+                if (!connectorWaypoints.has(draggingSegKey)) connectorWaypoints.set(draggingSegKey, []);
+                const wps = connectorWaypoints.get(draggingSegKey);
+                const insertAt = draggingSegInsertAt < 0 ? 0 : draggingSegInsertAt;
+
+                if (!segDragStartedWp) {
+                    var newWp = { x: snapV(Math.round(s.x)), y: snapV(Math.round(s.y)) };
+                    wps.splice(Math.max(0, Math.min(wps.length, insertAt)), 0, newWp);
+                    segDragStartedWp = true;
+                    draggingWpIdx = insertAt;
+                    draggingWpKey = draggingSegKey;
+                    isDraggingWaypoint = true;
+                    isDraggingSegment  = false;
                 }
+                renderConnectors();
             }
             return;
         }
@@ -2369,7 +2355,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Endpoint dragged to a DIFFERENT node → reconnect parent!
                             if (!wouldCreateCycle(childId, targetNodeId)) {
                                 var oldKey = oldParentId + '-' + childId;
-                                var oldWps = connectorWaypoints.get(oldKey);
                                 var oldCol = connectorColors.get(oldKey);
                                 var oldSty = connectorStyles.get(oldKey);
                                 var oldPorts = connectorPorts.get(oldKey);
@@ -2380,7 +2365,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 childNode.parent_id = targetNodeId;
                                 var newKey = targetNodeId + '-' + childId;
-                                if (oldWps) connectorWaypoints.set(newKey, oldWps.slice());
+                                // Reset waypoints for the new connection so it routes cleanly
+                                connectorWaypoints.delete(newKey);
                                 if (oldCol) connectorColors.set(newKey, oldCol);
                                 if (oldSty) connectorStyles.set(newKey, Object.assign({}, oldSty));
                                 var origToPort = (oldPorts && oldPorts.toPort) || 't';
@@ -2396,7 +2382,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Endpoint dragged to a DIFFERENT node → reconnect child!
                             if (!wouldCreateCycle(targetNodeId, oldParentId)) {
                                 var oldKey = oldParentId + '-' + childId;
-                                var oldWps = connectorWaypoints.get(oldKey);
                                 var oldCol = connectorColors.get(oldKey);
                                 var oldSty = connectorStyles.get(oldKey);
                                 var oldPorts = connectorPorts.get(oldKey);
@@ -2410,7 +2395,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     childNode.parent_id = null;
                                     targetChild.parent_id = oldParentId;
                                     var newKey = oldParentId + '-' + targetNodeId;
-                                    if (oldWps) connectorWaypoints.set(newKey, oldWps.slice());
+                                    // Reset waypoints for the new connection so it routes cleanly
+                                    connectorWaypoints.delete(newKey);
                                     if (oldCol) connectorColors.set(newKey, oldCol);
                                     if (oldSty) connectorStyles.set(newKey, Object.assign({}, oldSty));
                                     var origFromPort = (oldPorts && oldPorts.fromPort) || 'b';
@@ -2455,18 +2441,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (isDraggingWaypoint) {
+        if (isDraggingWaypoint || isDraggingSegment) {
             isDraggingWaypoint = false; draggingWpKey = null; draggingWpIdx = null;
-            clearWaypointGuides();
-            pushUndo(); persistConnectorData(); return;
-        }
-        if (isDraggingSegment) {
             isDraggingSegment = false; draggingSegKey = null; draggingSegInsertAt = null;
+            segDragStartedWp = false;
             clearWaypointGuides();
             hideCoordTooltip();
-            pushUndo();
-            persistConnectorData();
-            return;
+            pushUndo(); persistConnectorData(); return;
         }
         if (isConnecting && connectFromId !== null) {
             const target = findNodeAt(e.clientX, e.clientY);
