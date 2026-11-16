@@ -60,12 +60,15 @@ class StrukturController extends Controller
             Strukturor::where('id', $nodeData['id'])->update($updateData);
         }
 
-        // Save connector data (waypoints, colors, styles, ports) to app_settings
+        // Save connector data (waypoints, colors, styles, ports, labels, arrows, widths) to app_settings
         $connectorData = [
             'waypoints' => $request->input('waypoints', []),
             'colors'    => $request->input('connector_colors', []),
             'styles'    => $request->input('connector_styles', []),
             'ports'     => $request->input('connector_ports', []),
+            'labels'    => $request->input('connector_labels', []),
+            'arrows'    => $request->input('connector_arrows', []),
+            'widths'    => $request->input('connector_widths', []),
         ];
         AppSetting::setValue('struktur_connector_data', json_encode($connectorData));
 

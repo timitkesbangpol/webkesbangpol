@@ -374,6 +374,51 @@
 .builder-toast-item.error i { color:#dc3545; }
 .builder-toast-item.info i { color:#0d6efd; }
 @keyframes slideInRight { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+/* ---- Node Quick Add Child Button ---- */
+.node-quick-add-child {
+    position:absolute; bottom:-11px; left:50%; transform:translateX(-50%);
+    width:22px; height:22px; background:linear-gradient(135deg,#B40D1A,#8a0a12);
+    color:#fff; border:2px solid #fff; border-radius:50%; cursor:pointer;
+    font-size:0.65rem; display:none; align-items:center; justify-content:center;
+    z-index:22; box-shadow:0 2px 8px rgba(180,13,26,0.35); transition:all 0.15s;
+    line-height:1; padding:0;
+}
+.builder-node:hover .node-quick-add-child { display:flex; }
+.node-quick-add-child:hover { transform:translateX(-50%) scale(1.22); background:#58060a; }
+
+/* ---- Line Label Badges ---- */
+.connector-label-rect { fill:#ffffff; rx:4; ry:4; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.12)); }
+.connector-label-text { font-family:'Inter',sans-serif; font-size:9.5px; font-weight:700; fill:#1e293b; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
+.connector-label-group:hover .connector-label-rect { fill:#eff6ff; }
+
+/* ---- Multi-Select Alignment Grid ---- */
+.align-btn-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin-top:6px; }
+.align-tool-btn { padding:6px 4px; background:#f0f2f5; border:1px solid #dde3ec; border-radius:6px; font-size:0.75rem; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.12s; font-weight:600; }
+.align-tool-btn:hover { background:#B40D1A; color:#fff; border-color:#B40D1A; }
+.align-tool-btn.wide { grid-column:span 3; }
+
+/* ---- Line Label Tag Chips ---- */
+.ct-tags-row { display:flex; gap:4px; flex-wrap:wrap; margin-top:5px; }
+.ct-tag-chip { font-size:0.68rem; padding:3px 8px; border-radius:12px; background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; cursor:pointer; transition:all 0.1s; user-select:none; }
+.ct-tag-chip:hover { background:#fee2e2; border-color:#fca5a5; color:#991b1b; }
+
+/* ---- Toolbar Search ---- */
+.tb-search-wrap { position:relative; display:flex; align-items:center; margin-left:auto; }
+.tb-search-wrap i { position:absolute; left:8px; font-size:0.7rem; color:#94a3b8; pointer-events:none; }
+.tb-search-input { padding:4px 8px 4px 24px; border:1px solid #dde3ec; border-radius:6px; font-size:0.75rem; color:#1e293b; background:#fff; width:145px; outline:none; transition:all 0.15s; }
+.tb-search-input:focus { border-color:#B40D1A; width:195px; box-shadow:0 0 0 2px rgba(180,13,26,0.1); }
+
+/* ---- Search Highlight Pulse ---- */
+.builder-node.search-match { animation:search-pulse 0.8s infinite alternate !important; z-index:90 !important; }
+@keyframes search-pulse {
+    0% { box-shadow:0 0 0 3px #3b82f6, 0 8px 25px rgba(59,130,246,0.3); }
+    100% { box-shadow:0 0 0 7px #22c55e, 0 14px 40px rgba(34,197,94,0.5); }
+}
+
+/* ---- Quick action add child in panel ---- */
+.btn-add-child-direct { width:100%; padding:7px; background:#eff6ff; color:#2563eb; border:1px dashed #bfdbfe; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:8px; transition:all 0.12s; }
+.btn-add-child-direct:hover { background:#2563eb; color:#fff; border-style:solid; }
 </style>
 @endpush
 
@@ -395,19 +440,26 @@
 
     {{-- Toolbar --}}
     <div class="toolbar-row">
-        <button class="btn-primary-red" id="btn-tambah-data-inline">
-            <i class="fas fa-plus"></i> Tambah Data
+        <button class="btn-primary-red" id="btn-tambah-data-inline" title="Tambah kotak pejabat baru">
+            <i class="fas fa-plus"></i> Tambah Kotak
+        </button>
+        <button class="btn-outline" id="btn-auto-layout-inline" style="color:#0284c7;border-color:#bae6fd;" title="Tata dan rapikan posisi seluruh bagan otomatis">
+            <i class="fas fa-magic"></i> Rapikan Bagan
+        </button>
+        <button class="btn-outline" id="btn-export-png-inline" style="color:#059669;border-color:#a7f3d0;" title="Unduh bagan struktur sebagai gambar PNG High-Res">
+            <i class="fas fa-download"></i> Unduh PNG
         </button>
         <div class="tb-sep"></div>
         <button class="btn-outline" id="btn-undo-inline" disabled title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-        <div class="tb-sep"></div>
-        <button class="btn-outline" id="btn-save-layout-inline" style="background:#B40D1A;border-color:#B40D1A;color:#fff;">
+        <button class="btn-outline" id="btn-save-layout-inline" style="background:#B40D1A;border-color:#B40D1A;color:#fff;" title="Simpan tata letak dan gaya garis (Ctrl+S)">
             <i class="fas fa-save"></i> Simpan
         </button>
         <div class="tb-sep"></div>
-        <button class="btn-outline" id="btn-zoom-fit-inline"><i class="fas fa-expand"></i> Fit</button>
-        <button class="btn-outline" id="btn-zoom-reset-inline"><i class="fas fa-undo-alt"></i> Reset</button>
-        <span style="font-size:0.75rem;color:#8892a8;min-width:38px;text-align:center;font-weight:500;" id="zoom-level-inline">100%</span>
+        <button class="btn-outline" id="btn-zoom-out-inline" title="Perkecil (-)"><i class="fas fa-minus"></i></button>
+        <span style="font-size:0.75rem;color:#8892a8;min-width:38px;text-align:center;font-weight:600;" id="zoom-level-inline">100%</span>
+        <button class="btn-outline" id="btn-zoom-in-inline" title="Perbesar (+)"><i class="fas fa-plus"></i></button>
+        <button class="btn-outline" id="btn-zoom-fit-inline" title="Paskan dengan layar"><i class="fas fa-expand"></i> Fit</button>
+        <button class="btn-outline" id="btn-zoom-reset-inline" title="Reset Zoom ke 100%"><i class="fas fa-undo-alt"></i> 100%</button>
         <div class="tb-sep"></div>
         <div class="tool-mode-group">
             <button class="tool-mode-btn active" id="tool-select-btn" title="Mode Pilih — klik &amp; drag banyak node (V)">
@@ -417,14 +469,10 @@
                 <i class="fas fa-project-diagram"></i> Hubungkan
             </button>
         </div>
-        <span class="hint">
-            <kbd>Scroll</kbd>=Zoom &middot;
-            <kbd>MMB</kbd>=Geser &middot;
-            <kbd>V</kbd>/<kbd>C</kbd>=Mode &middot;
-            <kbd>Ctrl+A</kbd>=Semua &middot;
-            <kbd>Shift</kbd>+Klik=Multi &middot;
-            <kbd>Del</kbd>=Hapus
-        </span>
+        <div class="tb-search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-node-inline" class="tb-search-input" placeholder="Cari pegawai / jabatan...">
+        </div>
     </div>
 
     {{-- Builder Canvas + Panel (flex row) --}}
@@ -480,13 +528,34 @@
                 </div>
 
                 {{-- Multi-select --}}
-                <div class="panel-multi-info" id="panel-multi-select-info" style="display:none;">
-                    <i class="fas fa-object-group"></i>
-                    <span><strong id="panel-multi-count">0</strong> kotak dipilih.<br>Geser untuk memindahkan semua bersama.</span>
+                <div class="panel-multi-info" id="panel-multi-select-info" style="display:none;flex-direction:column;align-items:stretch;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="fas fa-object-group"></i>
+                        <span><strong id="panel-multi-count">0</strong> kotak dipilih.</span>
+                    </div>
+                    <div class="panel-align-tools">
+                        <label class="panel-label" style="margin-bottom:4px;">Sejajarkan Posisi (Align)</label>
+                        <div class="align-btn-grid">
+                            <button type="button" class="align-tool-btn" id="btn-align-left" title="Rata Kiri"><i class="fas fa-align-left"></i> Kiri</button>
+                            <button type="button" class="align-tool-btn" id="btn-align-center-h" title="Rata Tengah Horizontal"><i class="fas fa-align-center"></i> Tengah</button>
+                            <button type="button" class="align-tool-btn" id="btn-align-right" title="Rata Kanan"><i class="fas fa-align-right"></i> Kanan</button>
+                            <button type="button" class="align-tool-btn" id="btn-align-top" title="Rata Atas"><i class="fas fa-arrow-up"></i> Atas</button>
+                            <button type="button" class="align-tool-btn" id="btn-align-center-v" title="Rata Tengah Vertikal"><i class="fas fa-arrows-alt-v"></i> Tengah</button>
+                            <button type="button" class="align-tool-btn" id="btn-align-bottom" title="Rata Bawah"><i class="fas fa-arrow-down"></i> Bawah</button>
+                            <button type="button" class="align-tool-btn wide" id="btn-distribute-h" title="Bagi Jarak Horizontal Sama Rata"><i class="fas fa-arrows-alt-h"></i> Bagi Jarak Rata</button>
+                        </div>
+                    </div>
+                    <div class="panel-btn-row mt-2">
+                        <button type="button" class="panel-btn panel-btn-danger" id="btn-multi-delete"><i class="fas fa-trash"></i> Hapus Semua Terpilih</button>
+                    </div>
                 </div>
 
                 {{-- Single-select fields --}}
                 <div id="panel-single-fields">
+                    <button type="button" class="btn-add-child-direct" id="btn-add-child-direct">
+                        <i class="fas fa-plus-circle"></i> + Tambah Bawahan Langsung
+                    </button>
+
                     <div class="panel-group">
                         <label class="panel-label">Nama</label>
                         <input class="panel-input" id="edit-nama-inline" placeholder="Nama lengkap">
@@ -565,45 +634,81 @@
             {{-- === MODE GARIS === --}}
             <div class="panel-section" id="panel-section-garis">
                 <div>
-                    <h3 class="panel-title"><i class="fas fa-project-diagram"></i> Edit Garis</h3>
-                    <p class="panel-subtitle">Ubah gaya koneksi yang dipilih.</p>
+                    <h3 class="panel-title"><i class="fas fa-project-diagram"></i> Edit Garis Penghubung</h3>
+                    <p class="panel-subtitle">Kustomisasi bentuk, gaya, tipe &amp; keterangan relasi.</p>
                 </div>
 
                 <div class="panel-group">
                     <label class="panel-label">Bentuk Garis</label>
                     <div class="ct-group" id="ct-style-group">
-                        <button class="ct-btn active" data-style="orthogonal" title="Siku"><i class="fas fa-project-diagram"></i> Siku</button>
-                        <button class="ct-btn" data-style="straight" title="Lurus">— Lurus</button>
-                        <button class="ct-btn" data-style="curved" title="Lengkung">~ Lengkung</button>
+                        <button type="button" class="ct-btn active" data-style="rounded-orthogonal" title="Siku Halus (Modern)"><i class="fas fa-route"></i> Siku Halus</button>
+                        <button type="button" class="ct-btn" data-style="orthogonal" title="Siku Tegak"><i class="fas fa-project-diagram"></i> Siku 90°</button>
+                        <button type="button" class="ct-btn" data-style="straight" title="Garis Lurus">— Lurus</button>
+                        <button type="button" class="ct-btn" data-style="curved" title="Garis Lengkung">~ Lengkung</button>
                     </div>
                 </div>
 
                 <div class="panel-group">
-                    <label class="panel-label">Tipe Garis</label>
+                    <label class="panel-label">Pola Garis (Standar Birokrasi)</label>
                     <div class="ct-group" id="ct-dash-group">
-                        <button class="ct-btn active" data-dash="solid" title="Utuh">── Utuh</button>
-                        <button class="ct-btn" data-dash="dashed" title="Putus-putus">- - Putus</button>
+                        <button type="button" class="ct-btn active" data-dash="solid" title="Garis Komando Struktural">── Komando</button>
+                        <button type="button" class="ct-btn" data-dash="dashed" title="Garis Koordinasi / Pembinaan">- - Koordinasi</button>
+                        <button type="button" class="ct-btn" data-dash="dotted" title="Garis Fungsional / Pengawasan">··· Fungsional</button>
                     </div>
                 </div>
 
                 <div class="panel-group">
-                    <label class="panel-label">Port Asal (Dari)</label>
-                    <select class="ct-select" id="ct-from-port">
-                        <option value="b">Bawah</option>
-                        <option value="t">Atas</option>
-                        <option value="r">Kanan</option>
-                        <option value="l">Kiri</option>
-                    </select>
+                    <label class="panel-label">Ketebalan Garis</label>
+                    <div class="ct-group" id="ct-width-group">
+                        <button type="button" class="ct-btn" data-width="1.5" title="Tipis">Tipis</button>
+                        <button type="button" class="ct-btn active" data-width="2.5" title="Sedang (Standar)">Sedang</button>
+                        <button type="button" class="ct-btn" data-width="4" title="Tebal">Tebal</button>
+                    </div>
                 </div>
 
                 <div class="panel-group">
-                    <label class="panel-label">Port Tujuan (Ke)</label>
-                    <select class="ct-select" id="ct-to-port">
-                        <option value="t">Atas</option>
-                        <option value="b">Bawah</option>
-                        <option value="l">Kiri</option>
-                        <option value="r">Kanan</option>
-                    </select>
+                    <label class="panel-label">Mata Panah</label>
+                    <div class="ct-group" id="ct-arrow-group">
+                        <button type="button" class="ct-btn active" data-arrow="none" title="Tanpa Panah (Standar Bagan Resmi)">Tanpa Panah</button>
+                        <button type="button" class="ct-btn" data-arrow="end" title="Panah Menunjuk ke Bawahan">Panah Bawah</button>
+                        <button type="button" class="ct-btn" data-arrow="both" title="Panah Dua Arah (Koordinasi)">2 Arah</button>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <label class="panel-label">Label Keterangan Garis (Opsional)</label>
+                    <input type="text" class="panel-input" id="ct-label-input" placeholder="Misal: Garis Koordinasi, Plt., Subkoordinator" maxlength="35">
+                    <div class="ct-tags-row">
+                        <span class="ct-tag-chip" data-label="Garis Koordinasi">Koordinasi</span>
+                        <span class="ct-tag-chip" data-label="Plt.">Plt.</span>
+                        <span class="ct-tag-chip" data-label="Fungsional">Fungsional</span>
+                        <span class="ct-tag-chip" data-label="Sub-Koordinator">Sub-Koordinator</span>
+                        <span class="ct-tag-chip" data-label="" style="color:#dc3545;">✕ Hapus</span>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <label class="panel-label">Port Sambungan</label>
+                    <div style="display:flex;gap:6px;">
+                        <div style="flex:1;">
+                            <span style="font-size:0.65rem;color:#8892a8;display:block;margin-bottom:2px;">Dari (Atasan):</span>
+                            <select class="ct-select" id="ct-from-port">
+                                <option value="b">Bawah</option>
+                                <option value="t">Atas</option>
+                                <option value="r">Kanan</option>
+                                <option value="l">Kiri</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <span style="font-size:0.65rem;color:#8892a8;display:block;margin-bottom:2px;">Ke (Bawahan):</span>
+                            <select class="ct-select" id="ct-to-port">
+                                <option value="t">Atas</option>
+                                <option value="b">Bawah</option>
+                                <option value="l">Kiri</option>
+                                <option value="r">Kanan</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="panel-group">
@@ -618,12 +723,15 @@
                         <div class="cg-swatch" data-color="teal" style="background:#14b8a6;" title="Teal"></div>
                         <div class="cg-swatch" data-color="pink" style="background:#ec4899;" title="Pink"></div>
                         <div class="cg-swatch" data-color="gray" style="background:#6b7280;" title="Abu"></div>
-                        <div class="cg-reset" id="cg-reset-btn" title="Reset warna">↺</div>
+                        <div class="cg-reset" id="cg-reset-btn" title="Reset ke warna default atasan">↺</div>
                     </div>
                 </div>
 
                 <div class="panel-btn-row">
-                    <button class="panel-btn panel-btn-danger" id="ct-delete-btn"><i class="fas fa-trash"></i> Hapus Garis</button>
+                    <button type="button" class="panel-btn panel-btn-purple" id="ct-reset-waypoints-btn" title="Luruskan garis kembali"><i class="fas fa-compress-arrows-alt"></i> Sederhanakan Garis</button>
+                </div>
+                <div class="panel-btn-row">
+                    <button type="button" class="panel-btn panel-btn-danger" id="ct-delete-btn"><i class="fas fa-unlink"></i> Putuskan Hubungan Garis</button>
                 </div>
             </div>
 
@@ -732,8 +840,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Connector data
     const connectorWaypoints = new Map(); // key:"parentId-childId" → [{x,y}...]
     const connectorColors    = new Map(); // key:"parentId-childId" → colorName
-    const connectorStyles    = new Map(); // key:"parentId-childId" → { type:'orthogonal'|'straight'|'curved', dash:'solid'|'dashed' }
+    const connectorStyles    = new Map(); // key:"parentId-childId" → { type:'rounded-orthogonal'|'orthogonal'|'straight'|'curved', dash:'solid'|'dashed'|'dotted' }
     const connectorPorts     = new Map(); // key:"parentId-childId" → { fromPort:'b'|'t'|'l'|'r', toPort:'t'|'b'|'l'|'r' }
+    const connectorLabels    = new Map(); // key:"parentId-childId" → string
+    const connectorArrows    = new Map(); // key:"parentId-childId" → 'none'|'end'|'both'
+    const connectorWidths    = new Map(); // key:"parentId-childId" → 1.5|2.5|4
     let selectedConnectorKey = null;
 
     // Waypoint drag
@@ -1173,10 +1284,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getConnectorStyle(key) {
-        return connectorStyles.get(key) || { type: 'orthogonal', dash: 'solid' };
+        return connectorStyles.get(key) || { type: 'rounded-orthogonal', dash: 'solid' };
     }
 
-    function getOrthogonalPts(x1, y1, x2, y2, fd, td, wps) {
+    // ===== REBUILT SMART ORG-CHART ORTHOGONAL ROUTING =====
+    function getSmartOrthogonalPts(x1, y1, x2, y2, fd, td, wps) {
         if (wps && wps.length > 0) {
             var pts = [{ x: x1, y: y1 }];
             for (var i = 0; i < wps.length; i++) {
@@ -1212,26 +1324,178 @@ document.addEventListener('DOMContentLoaded', function() {
             return clean;
         }
 
-        // Strict 90-degree orthogonal steps without custom waypoints
-        if ((fd === 'b' || fd === 't') && (td === 't' || td === 'b')) {
-            var midY = Math.round((y1 + y2) / 2);
-            return [{ x: x1, y: y1 }, { x: x1, y: midY }, { x: x2, y: midY }, { x: x2, y: y2 }];
+        const STUB = 22;
+
+        // Bottom to Top (Hierarki Standar Atasan -> Bawahan)
+        if (fd === 'b' && td === 't') {
+            if (y2 >= y1 + STUB * 2) {
+                var midY = Math.round((y1 + y2) / 2);
+                return [
+                    { x: x1, y: y1 },
+                    { x: x1, y: midY },
+                    { x: x2, y: midY },
+                    { x: x2, y: y2 }
+                ];
+            } else {
+                var dropY = y1 + STUB;
+                var sideOffset = 160;
+                var clearX = x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset;
+                var riseY = y2 - STUB;
+                return [
+                    { x: x1, y: y1 },
+                    { x: x1, y: dropY },
+                    { x: clearX, y: dropY },
+                    { x: clearX, riseY },
+                    { x: x2, riseY },
+                    { x: x2, y: y2 }
+                ];
+            }
         }
-        if ((fd === 'l' || fd === 'r') && (td === 'l' || td === 'r')) {
-            var midX = Math.round((x1 + x2) / 2);
-            return [{ x: x1, y: y1 }, { x: midX, y: y1 }, { x: midX, y: y2 }, { x: x2, y: y2 }];
+
+        // Top to Bottom (Inverted)
+        if (fd === 't' && td === 'b') {
+            if (y1 >= y2 + STUB * 2) {
+                var midY = Math.round((y1 + y2) / 2);
+                return [
+                    { x: x1, y: y1 },
+                    { x: x1, y: midY },
+                    { x: x2, y: midY },
+                    { x: x2, y: y2 }
+                ];
+            } else {
+                var riseY = y1 - STUB;
+                var sideOffset = 160;
+                var clearX = x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset;
+                var dropY = y2 + STUB;
+                return [
+                    { x: x1, y: y1 },
+                    { x: x1, y: riseY },
+                    { x: clearX, y: riseY },
+                    { x: clearX, y: dropY },
+                    { x: x2, y: dropY },
+                    { x: x2, y: y2 }
+                ];
+            }
         }
-        if ((fd === 'b' || fd === 't') && (td === 'l' || td === 'r')) {
-            return [{ x: x1, y: y1 }, { x: x1, y: y2 }, { x: x2, y: y2 }];
+
+        // Right to Left (Horizontal)
+        if (fd === 'r' && td === 'l') {
+            if (x2 >= x1 + STUB * 2) {
+                var midX = Math.round((x1 + x2) / 2);
+                return [
+                    { x: x1, y: y1 },
+                    { x: midX, y: y1 },
+                    { x: midX, y: y2 },
+                    { x: x2, y: y2 }
+                ];
+            } else {
+                var rightX = x1 + STUB;
+                var clearY = y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60;
+                var leftX = x2 - STUB;
+                return [
+                    { x: x1, y: y1 },
+                    { x: rightX, y: y1 },
+                    { x: rightX, y: clearY },
+                    { x: leftX, y: clearY },
+                    { x: leftX, y: y2 },
+                    { x: x2, y: y2 }
+                ];
+            }
         }
-        if ((fd === 'l' || fd === 'r') && (td === 't' || td === 'b')) {
-            return [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }];
+
+        // Left to Right
+        if (fd === 'l' && td === 'r') {
+            if (x1 >= x2 + STUB * 2) {
+                var midX = Math.round((x1 + x2) / 2);
+                return [
+                    { x: x1, y: y1 },
+                    { x: midX, y: y1 },
+                    { x: midX, y: y2 },
+                    { x: x2, y: y2 }
+                ];
+            } else {
+                var leftX = x1 - STUB;
+                var clearY = y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60;
+                var rightX = x2 + STUB;
+                return [
+                    { x: x1, y: y1 },
+                    { x: leftX, y: y1 },
+                    { x: leftX, y: clearY },
+                    { x: rightX, y: clearY },
+                    { x: rightX, y: y2 },
+                    { x: x2, y: y2 }
+                ];
+            }
         }
-        return [{ x: x1, y: y1 }, { x: x1, y: y2 }, { x: x2, y: y2 }];
+
+        // Bottom to Left / Right
+        if (fd === 'b' && (td === 'l' || td === 'r')) {
+            return [
+                { x: x1, y: y1 },
+                { x: x1, y: y2 },
+                { x: x2, y: y2 }
+            ];
+        }
+
+        // Left / Right to Top
+        if ((fd === 'l' || fd === 'r') && td === 't') {
+            return [
+                { x: x1, y: y1 },
+                { x: x2, y: y1 },
+                { x: x2, y: y2 }
+            ];
+        }
+
+        // Default orthogonal fallback
+        var midY = Math.round((y1 + y2) / 2);
+        return [{ x: x1, y: y1 }, { x: x1, y: midY }, { x: x2, y: midY }, { x: x2, y: y2 }];
+    }
+
+    // Filleted smooth corners for orthogonal path (r = 10px)
+    function buildSmoothFilletedPath(pts, radius) {
+        if (!pts || pts.length === 0) return '';
+        if (pts.length === 1) return 'M ' + pts[0].x + ' ' + pts[0].y;
+        if (pts.length === 2 || !radius || radius <= 0) {
+            var d = 'M ' + pts[0].x + ' ' + pts[0].y;
+            for (var i = 1; i < pts.length; i++) {
+                d += ' L ' + pts[i].x + ' ' + pts[i].y;
+            }
+            return d;
+        }
+
+        var d = 'M ' + pts[0].x + ' ' + pts[0].y;
+        for (var i = 1; i < pts.length - 1; i++) {
+            var pPrev = pts[i - 1];
+            var pCurr = pts[i];
+            var pNext = pts[i + 1];
+
+            var v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
+            var v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
+            var len1 = Math.hypot(v1x, v1y);
+            var len2 = Math.hypot(v2x, v2y);
+
+            if (len1 < 1 || len2 < 1) {
+                d += ' L ' + pCurr.x + ' ' + pCurr.y;
+                continue;
+            }
+
+            var r = Math.min(radius, len1 / 2, len2 / 2);
+
+            var startX = pCurr.x + (v1x / len1) * r;
+            var startY = pCurr.y + (v1y / len1) * r;
+            var endX   = pCurr.x + (v2x / len2) * r;
+            var endY   = pCurr.y + (v2y / len2) * r;
+
+            d += ' L ' + Math.round(startX) + ' ' + Math.round(startY);
+            d += ' Q ' + pCurr.x + ' ' + pCurr.y + ' ' + Math.round(endX) + ' ' + Math.round(endY);
+        }
+        var last = pts[pts.length - 1];
+        d += ' L ' + last.x + ' ' + last.y;
+        return d;
     }
 
     function buildPath(x1, y1, x2, y2, wps, fd, td, styleType) {
-        styleType = styleType || 'orthogonal';
+        styleType = styleType || 'rounded-orthogonal';
 
         if (styleType === 'straight') {
             if (wps && wps.length > 0) {
@@ -1254,8 +1518,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2;
         }
 
-        // Strict Orthogonal: 100% Horizontal & Vertical steps only!
-        var pts = getOrthogonalPts(x1, y1, x2, y2, fd, td, wps);
+        var pts = getSmartOrthogonalPts(x1, y1, x2, y2, fd, td, wps);
+        if (styleType === 'rounded-orthogonal') {
+            return buildSmoothFilletedPath(pts, 10);
+        }
+
+        // Sharp orthogonal
         var res = 'M ' + pts[0].x + ' ' + pts[0].y;
         for (var i = 1; i < pts.length; i++) {
             res += ' L ' + pts[i].x + ' ' + pts[i].y;
@@ -1264,12 +1532,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function allPts(x1, y1, x2, y2, wps, fd, td, styleType) {
-        styleType = styleType || 'orthogonal';
+        styleType = styleType || 'rounded-orthogonal';
         if (styleType === 'straight' || styleType === 'curved') {
             if (wps && wps.length > 0) return [{ x: x1, y: y1 }].concat(wps, [{ x: x2, y: y2 }]);
             return [{ x: x1, y: y1 }, { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }, { x: x2, y: y2 }];
         }
-        return getOrthogonalPts(x1, y1, x2, y2, fd, td, wps);
+        return getSmartOrthogonalPts(x1, y1, x2, y2, fd, td, wps);
     }
 
     // ===== RENDER NODES =====
@@ -1352,11 +1620,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             el.innerHTML =
                 cardContent +
-                '<div class="node-port-arrow node-port-arrow-t" data-id="' + node.id + '">' + arrowSvg + '</div>' +
-                '<div class="node-port-arrow node-port-arrow-b" data-id="' + node.id + '">' + arrowSvg + '</div>' +
-                '<div class="node-port-arrow node-port-arrow-l" data-id="' + node.id + '">' + arrowSvg + '</div>' +
-                '<div class="node-port-arrow node-port-arrow-r" data-id="' + node.id + '">' + arrowSvg + '</div>' +
-                '<button class="node-delete-btn" data-id="' + node.id + '">×</button>';
+                '<div class="node-port-arrow node-port-arrow-t" data-id="' + node.id + '" title="Tarik relasi atasan">' + arrowSvg + '</div>' +
+                '<div class="node-port-arrow node-port-arrow-b" data-id="' + node.id + '" title="Tarik relasi bawahan">' + arrowSvg + '</div>' +
+                '<div class="node-port-arrow node-port-arrow-l" data-id="' + node.id + '" title="Tarik relasi">' + arrowSvg + '</div>' +
+                '<div class="node-port-arrow node-port-arrow-r" data-id="' + node.id + '" title="Tarik relasi">' + arrowSvg + '</div>' +
+                '<button class="node-quick-add-child" data-id="' + node.id + '" title="Tambah bawahan langsung">+</button>' +
+                '<button class="node-delete-btn" data-id="' + node.id + '" title="Hapus kotak">×</button>';
 
             el.addEventListener('dblclick', function(e) {
                 if (e.target.closest('.node-port-arrow')) return;
@@ -1396,6 +1665,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (handle.classList.contains('node-port-arrow-l')) port = 'l';
                 if (handle.classList.contains('node-port-arrow-r')) port = 'r';
                 startConnect(e, parseInt(handle.dataset.id), port);
+            });
+        });
+
+        // Tombol +: tambah bawahan langsung
+        stage.querySelectorAll('.node-quick-add-child').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = parseInt(btn.dataset.id);
+                quickAddChild(id);
             });
         });
 
@@ -1458,16 +1736,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Visual path
             var vp = mkSvg('path');
+            var strokeW = connectorWidths.get(key) || 2.5;
             vp.setAttribute('d', d); vp.setAttribute('stroke', finalColor);
-            vp.setAttribute('stroke-width', isSelected ? '3' : '2');
+            vp.setAttribute('stroke-width', isSelected ? String(strokeW + 1.2) : String(strokeW));
             vp.setAttribute('fill', 'none');
             vp.setAttribute('stroke-linecap', 'round'); vp.setAttribute('stroke-linejoin', 'round');
             if (cStyle.dash === 'dashed') {
                 vp.setAttribute('stroke-dasharray', '6,4');
+            } else if (cStyle.dash === 'dotted') {
+                vp.setAttribute('stroke-dasharray', '2.5,4');
             }
             if (isSelected) {
-                vp.setAttribute('stroke-width', '3.5');
-                // Draw.io style: multi-layered glow on selected connector
+                // Multi-layered glow on selected connector
                 vp.style.filter = 'drop-shadow(0 0 3px ' + finalColor + '99) drop-shadow(0 0 8px ' + finalColor + '44)';
                 vp.style.transition = 'none';
             }
@@ -1478,11 +1758,57 @@ document.addEventListener('DOMContentLoaded', function() {
             vp.style.pointerEvents = 'none';
             svgEl.appendChild(vp);
 
-            // Draw.io style: Arrowhead at child (target) end
-            var arrowPoly = drawArrowhead(x2, y2, td, isSelected ? 2.5 : 1.8, finalColor);
-            if (arrowPoly) {
-                if (isDraggingEndpoint && key === draggingEndpointKey) arrowPoly.style.opacity = '0.2';
-                svgEl.appendChild(arrowPoly);
+            // Arrowheads: check connectorArrows ('none' | 'end' | 'both')
+            var arrowType = connectorArrows.get(key) || 'none';
+            if (arrowType === 'end' || arrowType === 'both') {
+                var arrowPoly = drawArrowhead(x2, y2, td, strokeW, finalColor, false);
+                if (arrowPoly) {
+                    if (isDraggingEndpoint && key === draggingEndpointKey) arrowPoly.style.opacity = '0.2';
+                    svgEl.appendChild(arrowPoly);
+                }
+            }
+            if (arrowType === 'both') {
+                var arrowFrom = drawArrowhead(x1, y1, fd, strokeW, finalColor, true);
+                if (arrowFrom) {
+                    if (isDraggingEndpoint && key === draggingEndpointKey) arrowFrom.style.opacity = '0.2';
+                    svgEl.appendChild(arrowFrom);
+                }
+            }
+
+            // Line Label Badge (if any)
+            var cLabel = connectorLabels.get(key);
+            if (cLabel && cLabel.trim() !== '') {
+                var cPts = allPts(x1, y1, x2, y2, wps, fd, td, cStyle.type);
+                var midIdx = Math.floor(cPts.length / 2);
+                var lx = cPts.length % 2 === 0 && midIdx > 0 ? (cPts[midIdx - 1].x + cPts[midIdx].x) / 2 : cPts[midIdx].x;
+                var ly = cPts.length % 2 === 0 && midIdx > 0 ? (cPts[midIdx - 1].y + cPts[midIdx].y) / 2 : cPts[midIdx].y;
+
+                var g = mkSvg('g');
+                g.setAttribute('class', 'connector-label-group');
+                g.style.cursor = 'pointer';
+
+                var tw = Math.max(36, cLabel.length * 6.5 + 16);
+                var rect = mkSvg('rect');
+                rect.setAttribute('x', lx - tw / 2);
+                rect.setAttribute('y', ly - 10);
+                rect.setAttribute('width', tw);
+                rect.setAttribute('height', '20');
+                rect.setAttribute('class', 'connector-label-rect');
+                rect.setAttribute('stroke', finalColor);
+
+                var txt = mkSvg('text');
+                txt.setAttribute('x', lx);
+                txt.setAttribute('y', ly + 1);
+                txt.setAttribute('class', 'connector-label-text');
+                txt.textContent = cLabel;
+
+                g.appendChild(rect);
+                g.appendChild(txt);
+                g.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    selectConnector(key);
+                });
+                svgEl.appendChild(g);
             }
 
             // Hit area (transparent wide path for click events) — draw.io style hover
@@ -1562,13 +1888,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Draw.io style: Arrowhead at connector end
-    function drawArrowhead(x, y, portDir, strokeW, color) {
+    function drawArrowhead(x, y, portDir, strokeW, color, isReversed) {
         var angle = 0;
         if (portDir === 'b') angle = Math.PI / 2;
         else if (portDir === 't') angle = -Math.PI / 2;
         else if (portDir === 'l') angle = Math.PI;
         else if (portDir === 'r') angle = 0;
-        var len = 10, ang = 0.42;
+        if (isReversed) angle += Math.PI;
+
+        var len = Math.max(9, 10 * (strokeW / 2));
+        var ang = 0.44;
         var pArr = [
             (x - len * Math.cos(angle - ang)) + ',' + (y - len * Math.sin(angle - ang)),
             x + ',' + y,
@@ -1579,7 +1908,7 @@ document.addEventListener('DOMContentLoaded', function() {
         poly.setAttribute('fill', color);
         poly.setAttribute('stroke', 'none');
         poly.style.pointerEvents = 'none';
-        poly.style.opacity = '0.85';
+        poly.style.opacity = '0.9';
         return poly;
     }
 
@@ -2638,6 +2967,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var st = getConnectorStyle(key);
         var curColor = connectorColors.get(key) || '';
+        var curWidth = connectorWidths.get(key) || 2.5;
+        var curArrow = connectorArrows.get(key) || 'none';
+        var curLabel = connectorLabels.get(key) || '';
+
         var parts = key.split('-');
         var pNode = getNodeById(parseInt(parts[0]));
         var cNode = getNodeById(parseInt(parts[1]));
@@ -2654,13 +2987,25 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('ct-from-port').value = fromP;
         document.getElementById('ct-to-port').value   = toP;
 
+        // Label input
+        var labelInput = document.getElementById('ct-label-input');
+        if (labelInput) labelInput.value = curLabel;
+
         // Highlight active style button
         document.querySelectorAll('#ct-style-group .ct-btn').forEach(function(b) {
-            b.classList.toggle('active', b.dataset.style === (st.type || 'orthogonal'));
+            b.classList.toggle('active', b.dataset.style === (st.type || 'rounded-orthogonal'));
         });
         // Highlight active dash button
         document.querySelectorAll('#ct-dash-group .ct-btn').forEach(function(b) {
             b.classList.toggle('active', b.dataset.dash === (st.dash || 'solid'));
+        });
+        // Highlight active width button
+        document.querySelectorAll('#ct-width-group .ct-btn').forEach(function(b) {
+            b.classList.toggle('active', parseFloat(b.dataset.width) === curWidth);
+        });
+        // Highlight active arrow button
+        document.querySelectorAll('#ct-arrow-group .ct-btn').forEach(function(b) {
+            b.classList.toggle('active', b.dataset.arrow === curArrow);
         });
         // Highlight active color swatch
         document.querySelectorAll('#ct-color-swatches .cg-swatch').forEach(function(s) {
@@ -2703,11 +3048,68 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             if (!selectedConnectorKey) return;
             var cur = getConnectorStyle(selectedConnectorKey);
-            connectorStyles.set(selectedConnectorKey, { type: cur.type || 'orthogonal', dash: btn.dataset.dash });
+            connectorStyles.set(selectedConnectorKey, { type: cur.type || 'rounded-orthogonal', dash: btn.dataset.dash });
             pushUndo(); renderConnectors(); showConnectorPanel(selectedConnectorKey);
-            showToast('Tipe garis diubah', 'success'); persistConnectorData();
+            showToast('Pola garis diubah', 'success'); persistConnectorData();
         });
     });
+
+    document.querySelectorAll('#ct-width-group .ct-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!selectedConnectorKey) return;
+            connectorWidths.set(selectedConnectorKey, parseFloat(btn.dataset.width));
+            pushUndo(); renderConnectors(); showConnectorPanel(selectedConnectorKey);
+            showToast('Ketebalan garis diubah', 'success'); persistConnectorData();
+        });
+    });
+
+    document.querySelectorAll('#ct-arrow-group .ct-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!selectedConnectorKey) return;
+            connectorArrows.set(selectedConnectorKey, btn.dataset.arrow);
+            pushUndo(); renderConnectors(); showConnectorPanel(selectedConnectorKey);
+            showToast('Mata panah diubah', 'success'); persistConnectorData();
+        });
+    });
+
+    // Label input
+    var labelInputEl = document.getElementById('ct-label-input');
+    if (labelInputEl) {
+        labelInputEl.addEventListener('input', function() {
+            if (!selectedConnectorKey) return;
+            var val = this.value.trim();
+            if (val) connectorLabels.set(selectedConnectorKey, val);
+            else connectorLabels.delete(selectedConnectorKey);
+            renderConnectors(); persistConnectorData();
+        });
+    }
+
+    // Quick tag chips for line label
+    document.querySelectorAll('.ct-tag-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            if (!selectedConnectorKey) return;
+            var labelVal = this.dataset.label || '';
+            var lInput = document.getElementById('ct-label-input');
+            if (lInput) lInput.value = labelVal;
+            if (labelVal) connectorLabels.set(selectedConnectorKey, labelVal);
+            else connectorLabels.delete(selectedConnectorKey);
+            pushUndo(); renderConnectors(); showToast(labelVal ? 'Label garis: ' + labelVal : 'Label dihapus', 'info'); persistConnectorData();
+        });
+    });
+
+    // Reset waypoints button
+    var resetWpBtn = document.getElementById('ct-reset-waypoints-btn');
+    if (resetWpBtn) {
+        resetWpBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!selectedConnectorKey) return;
+            pushUndo();
+            connectorWaypoints.delete(selectedConnectorKey);
+            renderConnectors(); showToast('Garis diluruskan kembali', 'success'); persistConnectorData();
+        });
+    }
 
     document.querySelectorAll('#ct-color-swatches .cg-swatch').forEach(function(sw) {
         sw.addEventListener('click', function(e) {
@@ -2739,9 +3141,12 @@ document.addEventListener('DOMContentLoaded', function() {
             connectorColors.delete(selectedConnectorKey);
             connectorStyles.delete(selectedConnectorKey);
             connectorPorts.delete(selectedConnectorKey);
+            connectorLabels.delete(selectedConnectorKey);
+            connectorArrows.delete(selectedConnectorKey);
+            connectorWidths.delete(selectedConnectorKey);
             selectedConnectorKey = null;
             setPanelMode('idle');
-            renderNodes(); showToast('Koneksi dihapus', 'info'); persistConnectorData();
+            renderNodes(); showToast('Koneksi berhasil diputuskan', 'info'); persistConnectorData();
         }
     });
 
@@ -2766,9 +3171,27 @@ document.addEventListener('DOMContentLoaded', function() {
             waypoints: Object.fromEntries(connectorWaypoints),
             colors: Object.fromEntries(connectorColors),
             styles: Object.fromEntries(connectorStyles),
-            ports: Object.fromEntries(connectorPorts)
+            ports: Object.fromEntries(connectorPorts),
+            labels: Object.fromEntries(connectorLabels),
+            arrows: Object.fromEntries(connectorArrows),
+            widths: Object.fromEntries(connectorWidths)
         };
         try { localStorage.setItem('struktur_connector_data', JSON.stringify(d)); } catch (ex) {}
+    }
+
+    function quickAddChild(parentId) {
+        const parent = getNodeById(parentId);
+        if (!parent) return null;
+        const children = nodes.filter(function(n) { return n.parent_id === parentId; });
+        const childW = 280, gapX = 35;
+        let newX, newY = (parent.y || 0) + 160;
+        if (children.length === 0) {
+            newX = parent.x || 0;
+        } else {
+            const maxX = Math.max(...children.map(function(c) { return c.x || 0; }));
+            newX = maxX + childW + gapX;
+        }
+        return addNode(newX, newY, parentId);
     }
 
     // ===== TOOL MODE =====
@@ -2897,6 +3320,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         remapK(connectorColors);
                         remapK(connectorStyles);
                         remapK(connectorPorts);
+                        remapK(connectorLabels);
+                        remapK(connectorArrows);
+                        remapK(connectorWidths);
                     }
 
                     if (selectedNodeId === oid && d.node.id !== oid) {
@@ -2938,6 +3364,12 @@ document.addEventListener('DOMContentLoaded', function() {
             connectorStyles.clear(); for (const [k, v] of remStys) connectorStyles.set(k, v);
             const remPrts = new Map(); for (const [k, v] of connectorPorts) remPrts.set(remapKey(k), v);
             connectorPorts.clear(); for (const [k, v] of remPrts) connectorPorts.set(k, v);
+            const remLbl = new Map(); for (const [k, v] of connectorLabels) remLbl.set(remapKey(k), v);
+            connectorLabels.clear(); for (const [k, v] of remLbl) connectorLabels.set(k, v);
+            const remArr = new Map(); for (const [k, v] of connectorArrows) remArr.set(remapKey(k), v);
+            connectorArrows.clear(); for (const [k, v] of remArr) connectorArrows.set(k, v);
+            const remWid = new Map(); for (const [k, v] of connectorWidths) remWid.set(remapKey(k), v);
+            connectorWidths.clear(); for (const [k, v] of remWid) connectorWidths.set(k, v);
             const updatedNodes = nodes.map(function(n) {
                 let pid = n.parent_id;
                 if (pid && idMap[pid]) pid = idMap[pid];
@@ -2950,13 +3382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     color: n.color || 'blue'
                 };
             });
-            const lsData = {
-                waypoints: Object.fromEntries(connectorWaypoints),
-                colors: Object.fromEntries(connectorColors),
-                styles: Object.fromEntries(connectorStyles),
-                ports: Object.fromEntries(connectorPorts)
-            };
-            try { localStorage.setItem('struktur_connector_data', JSON.stringify(lsData)); } catch (ex) {}
+            persistConnectorData();
             return fetch('{{ route('strukturors.save-layout') }}', {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -2965,7 +3391,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     waypoints: Object.fromEntries(connectorWaypoints),
                     connector_colors: Object.fromEntries(connectorColors),
                     connector_styles: Object.fromEntries(connectorStyles),
-                    connector_ports: Object.fromEntries(connectorPorts)
+                    connector_ports: Object.fromEntries(connectorPorts),
+                    connector_labels: Object.fromEntries(connectorLabels),
+                    connector_arrows: Object.fromEntries(connectorArrows),
+                    connector_widths: Object.fromEntries(connectorWidths)
                 })
             });
         }).then(function(r) { return r.json(); }).then(function(d) {
@@ -2982,7 +3411,10 @@ document.addEventListener('DOMContentLoaded', function() {
             waypoints: new Map(Array.from(connectorWaypoints.entries()).map(function(e) { return [e[0], e[1].slice()]; })),
             colors:    new Map(Array.from(connectorColors.entries())),
             styles:    new Map(Array.from(connectorStyles.entries()).map(function(e) { return [e[0], Object.assign({}, e[1])]; })),
-            ports:     new Map(Array.from(connectorPorts.entries()).map(function(e) { return [e[0], Object.assign({}, e[1])]; }))
+            ports:     new Map(Array.from(connectorPorts.entries()).map(function(e) { return [e[0], Object.assign({}, e[1])]; })),
+            labels:    new Map(Array.from(connectorLabels.entries())),
+            arrows:    new Map(Array.from(connectorArrows.entries())),
+            widths:    new Map(Array.from(connectorWidths.entries()))
         });
         if (undoStack.length > 30) undoStack.shift();
         document.getElementById('btn-undo-inline').disabled = false;
@@ -2995,6 +3427,9 @@ document.addEventListener('DOMContentLoaded', function() {
         connectorColors.clear();    for (const [k, v] of sn.colors)    connectorColors.set(k, v);
         connectorStyles.clear();    if (sn.styles) for (const [k, v] of sn.styles) connectorStyles.set(k, v);
         connectorPorts.clear();     if (sn.ports)  for (const [k, v] of sn.ports)  connectorPorts.set(k, v);
+        connectorLabels.clear();    if (sn.labels) for (const [k, v] of sn.labels) connectorLabels.set(k, v);
+        connectorArrows.clear();    if (sn.arrows) for (const [k, v] of sn.arrows) connectorArrows.set(k, v);
+        connectorWidths.clear();    if (sn.widths) for (const [k, v] of sn.widths) connectorWidths.set(k, v);
         if (undoStack.length === 0) document.getElementById('btn-undo-inline').disabled = true;
         if (selectedNodeId && !getNodeById(selectedNodeId)) { deselectAll(); panel.classList.remove('open'); }
         renderNodes();
@@ -3087,11 +3522,429 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(function() { el.remove(); }, 300); }, 3000);
     }
 
+    // ===== ALIGNMENT & DISTRIBUTION =====
+    function alignSelectedNodes(type) {
+        if (selectedNodeIds.size < 2) {
+            showToast('Pilih minimal 2 kotak untuk meratakan', 'info');
+            return;
+        }
+        pushUndo();
+        const sel = [...selectedNodeIds].map(function(id) { return getNodeById(id); }).filter(Boolean);
+        const cardW = 280, cardH = 96;
+
+        if (type === 'left') {
+            const minX = Math.min(...sel.map(function(n) { return n.x || 0; }));
+            sel.forEach(function(n) { n.x = minX; });
+        } else if (type === 'center-h') {
+            const avgX = Math.round(sel.reduce(function(acc, n) { return acc + (n.x || 0); }, 0) / sel.length);
+            sel.forEach(function(n) { n.x = avgX; });
+        } else if (type === 'right') {
+            const maxX = Math.max(...sel.map(function(n) { return n.x || 0; }));
+            sel.forEach(function(n) { n.x = maxX; });
+        } else if (type === 'top') {
+            const minY = Math.min(...sel.map(function(n) { return n.y || 0; }));
+            sel.forEach(function(n) { n.y = minY; });
+        } else if (type === 'center-v') {
+            const avgY = Math.round(sel.reduce(function(acc, n) { return acc + (n.y || 0); }, 0) / sel.length);
+            sel.forEach(function(n) { n.y = avgY; });
+        } else if (type === 'bottom') {
+            const maxY = Math.max(...sel.map(function(n) { return n.y || 0; }));
+            sel.forEach(function(n) { n.y = maxY; });
+        } else if (type === 'distribute-h') {
+            if (sel.length > 2) {
+                sel.sort(function(a, b) { return (a.x || 0) - (b.x || 0); });
+                const firstX = sel[0].x || 0;
+                const lastX = sel[sel.length - 1].x || 0;
+                const totalSpan = lastX - firstX;
+                const totalCardsW = (sel.length - 1) * cardW;
+                const gap = Math.max(30, (totalSpan - totalCardsW) / (sel.length - 1));
+                for (let i = 1; i < sel.length - 1; i++) {
+                    sel[i].x = Math.round(firstX + i * (cardW + gap));
+                }
+            }
+        }
+        renderNodes();
+        persistConnectorData();
+        showToast('Kotak berhasil diratakan', 'success');
+    }
+
+    // ===== AUTO-LAYOUT TREE =====
+    function autoLayoutTree() {
+        if (nodes.length === 0) return;
+        pushUndo();
+
+        const cardW = 280, cardH = 96, gapX = 40, gapY = 160;
+
+        // Build parent-child hierarchy map
+        const childrenMap = new Map();
+        nodes.forEach(function(n) { childrenMap.set(n.id, []); });
+        const rootNodes = [];
+
+        nodes.forEach(function(n) {
+            if (n.parent_id && childrenMap.has(n.parent_id)) {
+                childrenMap.get(n.parent_id).push(n);
+            } else {
+                rootNodes.push(n);
+            }
+        });
+
+        // Compute subtree width for each node recursively
+        const subtreeWidths = new Map();
+        function computeSubtreeWidth(nodeId) {
+            const children = childrenMap.get(nodeId) || [];
+            if (children.length === 0) {
+                subtreeWidths.set(nodeId, cardW);
+                return cardW;
+            }
+            let totalChildrenWidth = 0;
+            children.forEach(function(ch, idx) {
+                totalChildrenWidth += computeSubtreeWidth(ch.id);
+                if (idx < children.length - 1) totalChildrenWidth += gapX;
+            });
+            const w = Math.max(cardW, totalChildrenWidth);
+            subtreeWidths.set(nodeId, w);
+            return w;
+        }
+
+        rootNodes.forEach(function(r) { computeSubtreeWidth(r.id); });
+
+        // Recursively position nodes
+        function positionNode(node, leftX, topY) {
+            const children = childrenMap.get(node.id) || [];
+            const subW = subtreeWidths.get(node.id) || cardW;
+
+            if (children.length === 0) {
+                node.x = Math.round(leftX + (subW - cardW) / 2);
+                node.y = Math.round(topY);
+            } else {
+                let curChildLeft = leftX;
+                children.forEach(function(ch) {
+                    const chSubW = subtreeWidths.get(ch.id) || cardW;
+                    positionNode(ch, curChildLeft, topY + gapY);
+                    curChildLeft += chSubW + gapX;
+                });
+                const firstChildCenter = (children[0].x || 0) + cardW / 2;
+                const lastChildCenter = (children[children.length - 1].x || 0) + cardW / 2;
+                node.x = Math.round((firstChildCenter + lastChildCenter) / 2 - cardW / 2);
+                node.y = Math.round(topY);
+            }
+        }
+
+        let curRootLeft = 80;
+        rootNodes.forEach(function(r) {
+            const rw = subtreeWidths.get(r.id) || cardW;
+            positionNode(r, curRootLeft, 100);
+            curRootLeft += rw + 80;
+        });
+
+        // Reset manual waypoints so clean rounded orthogonal lines calculate automatically
+        connectorWaypoints.clear();
+
+        renderNodes();
+        persistConnectorData();
+        zoomFit();
+        showToast('✨ Bagan berhasil dirapikan otomatis!', 'success');
+    }
+
+    // ===== HIGH-RES PNG EXPORT =====
+    function exportDiagramPng() {
+        if (nodes.length === 0) {
+            showToast('Tidak ada data bagan untuk diunduh', 'info');
+            return;
+        }
+        showToast('Menyiapkan gambar bagan struktur...', 'info');
+
+        const cardW = 280, cardH = 96;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        nodes.forEach(function(n) {
+            const x = n.x || 0, y = n.y || 0;
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x + cardW > maxX) maxX = x + cardW;
+            if (y + cardH > maxY) maxY = y + cardH;
+        });
+
+        const padX = 80, padTop = 150, padBottom = 80;
+        const totalW = Math.max(1200, (maxX - minX) + padX * 2);
+        const totalH = Math.max(800, (maxY - minY) + padTop + padBottom);
+        const offsetX = padX - minX;
+        const offsetY = padTop - minY;
+
+        const dpr = 2; // Retina 2x for sharp render
+        const canvas = document.createElement('canvas');
+        canvas.width = totalW * dpr;
+        canvas.height = totalH * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        // Background
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, totalW, totalH);
+
+        // Header Banner
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, totalW, 110);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(0, 109, totalW, 1);
+
+        // Header Title
+        ctx.fillStyle = '#8a0a12';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('BADAN KESATUAN BANGSA DAN POLITIK KOTA BANDUNG', totalW / 2, 45);
+
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '600 15px "Plus Jakarta Sans", Arial, sans-serif';
+        ctx.fillText('BAGAN STRUKTUR ORGANISASI', totalW / 2, 72);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px "Plus Jakarta Sans", Arial, sans-serif';
+        const nowStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+        ctx.fillText('Diunduh pada: ' + nowStr, totalW / 2, 92);
+
+        // Helper for rounded rectangle
+        function roundRect(ctx, x, y, w, h, r, fill, stroke, strokeColor) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+            if (stroke) { ctx.strokeStyle = strokeColor || '#cbd5e1'; ctx.lineWidth = 1; ctx.stroke(); }
+        }
+
+        // Draw connectors
+        nodes.forEach(function(child) {
+            if (!child.parent_id) return;
+            const parent = getNodeById(child.parent_id);
+            if (!parent) return;
+
+            const key = parent.id + '-' + child.id;
+            const wps = connectorWaypoints.get(key) || [];
+            const userP = connectorPorts.get(key) || {};
+            const bp = getBestPorts(parent, child);
+            const fd = userP.from || bp.from, td = userP.to || bp.to;
+            const p1 = getPortPos(parent, fd), p2 = getPortPos(child, td);
+
+            const allP = allPts(p1.x, p1.y, p2.x, p2.y, wps, fd, td);
+            const lineColor = connectorColors.get(key) || '#64748b';
+            const userSty = connectorStyles.get(key) || {};
+            const lineDash = userSty.dash || 'solid';
+            const lineW = connectorWidths.get(key) || 2;
+
+            ctx.save();
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = lineW;
+            if (lineDash === 'dashed') ctx.setLineDash([7, 4]);
+            else if (lineDash === 'dotted') ctx.setLineDash([3, 3]);
+            else ctx.setLineDash([]);
+
+            ctx.beginPath();
+            for (let i = 0; i < allP.length; i++) {
+                const px = allP[i].x + offsetX, py = allP[i].y + offsetY;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.restore();
+
+            // Label if exists
+            const lbl = connectorLabels.get(key);
+            if (lbl && allP.length >= 2) {
+                const midIdx = Math.floor(allP.length / 2);
+                const midP = allP[midIdx];
+                const lx = midP.x + offsetX, ly = midP.y + offsetY;
+                ctx.save();
+                ctx.font = 'bold 10px "Plus Jakarta Sans", Arial, sans-serif';
+                const textMetrics = ctx.measureText(lbl);
+                const bw = textMetrics.width + 14, bh = 18;
+                roundRect(ctx, lx - bw / 2, ly - bh / 2, bw, bh, 4, '#ffffff', true, '#cbd5e1');
+                ctx.fillStyle = '#334155';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(lbl, lx, ly);
+                ctx.restore();
+            }
+        });
+
+        // Draw nodes
+        const colorPalette = {
+            red:    { bar: '#B40D1A', border: '#fecaca', bg: '#ffffff' },
+            blue:   { bar: '#2563eb', border: '#bfdbfe', bg: '#ffffff' },
+            green:  { bar: '#059669', border: '#a7f3d0', bg: '#ffffff' },
+            amber:  { bar: '#d97706', border: '#fde68a', bg: '#ffffff' },
+            purple: { bar: '#7c3aed', border: '#ddd6fe', bg: '#ffffff' },
+            teal:   { bar: '#0d9488', border: '#99f6e4', bg: '#ffffff' }
+        };
+
+        nodes.forEach(function(n) {
+            const nx = (n.x || 0) + offsetX, ny = (n.y || 0) + offsetY;
+            const theme = colorPalette[n.color] || colorPalette.blue;
+
+            // Card shadow & box
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 4;
+            roundRect(ctx, nx, ny, cardW, cardH, 8, theme.bg, true, theme.border);
+            ctx.restore();
+
+            // Top accent bar
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(nx + 8, ny);
+            ctx.lineTo(nx + cardW - 8, ny);
+            ctx.quadraticCurveTo(nx + cardW, ny, nx + cardW, ny + 5);
+            ctx.lineTo(nx, ny + 5);
+            ctx.quadraticCurveTo(nx, ny, nx + 8, ny);
+            ctx.closePath();
+            ctx.fillStyle = theme.bar;
+            ctx.fill();
+            ctx.restore();
+
+            // Photo avatar placeholder or circle
+            const avX = nx + 32, avY = ny + 52, avR = 20;
+            ctx.beginPath();
+            ctx.arc(avX, avY, avR, 0, Math.PI * 2);
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fill();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Jabatan text
+            ctx.save();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 11px "Plus Jakarta Sans", Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            let jabText = (n.jabatan || 'Jabatan').toUpperCase();
+            if (jabText.length > 32) jabText = jabText.slice(0, 30) + '...';
+            ctx.fillText(jabText, nx + 62, ny + 18);
+
+            // Nama text
+            ctx.fillStyle = '#334155';
+            ctx.font = '600 12px "Plus Jakarta Sans", Arial, sans-serif';
+            let namaText = n.nama && n.nama !== '-' ? n.nama : '-';
+            if (namaText.length > 28) namaText = namaText.slice(0, 26) + '...';
+            ctx.fillText(namaText, nx + 62, ny + 38);
+
+            // NIP / Golongan text
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px "Plus Jakarta Sans", Arial, sans-serif';
+            const nipText = 'NIP: ' + (n.nip || '-');
+            ctx.fillText(nipText, nx + 62, ny + 58);
+
+            if (n.pangkat && n.pangkat !== '-') {
+                ctx.fillText(n.pangkat + (n.golongan && n.golongan !== '-' ? ' (' + n.golongan + ')' : ''), nx + 62, ny + 73);
+            }
+            ctx.restore();
+        });
+
+        // Export to PNG blob
+        canvas.toBlob(function(blob) {
+            if (!blob) {
+                showToast('Gagal memproses gambar', 'error');
+                return;
+            }
+            const dlUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = dlUrl;
+            a.download = 'struktur-organisasi-bakesbangpol.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(dlUrl);
+            showToast('✅ Bagan berhasil diunduh sebagai gambar PNG!', 'success');
+        }, 'image/png');
+    }
+
+    // ===== LIVE SEARCH =====
+    function searchNodes(query) {
+        const q = (query || '').toLowerCase().trim();
+        const nodeEls = stage.querySelectorAll('.builder-node');
+        nodeEls.forEach(function(el) { el.classList.remove('search-match'); });
+
+        if (!q) return;
+
+        let firstMatchNode = null;
+        nodes.forEach(function(n) {
+            const j = (n.jabatan || '').toLowerCase();
+            const nm = (n.nama || '').toLowerCase();
+            const nip = (n.nip || '').toLowerCase();
+            if (j.includes(q) || nm.includes(q) || nip.includes(q)) {
+                if (!firstMatchNode) firstMatchNode = n;
+                const el = stage.querySelector('.builder-node[data-id="' + n.id + '"]');
+                if (el) el.classList.add('search-match');
+            }
+        });
+
+        if (firstMatchNode) {
+            const r = body.getBoundingClientRect();
+            panX = r.width / 2 - (firstMatchNode.x + 140) * zoomLevel;
+            panY = r.height / 2 - (firstMatchNode.y + 48) * zoomLevel;
+            applyTransform();
+        }
+    }
+
     // ===== EVENT BINDINGS =====
     document.getElementById('btn-save-layout-inline').addEventListener('click', saveAllLayout);
     document.getElementById('btn-undo-inline').addEventListener('click', undo);
     document.getElementById('btn-zoom-fit-inline').addEventListener('click', zoomFit);
     document.getElementById('btn-zoom-reset-inline').addEventListener('click', function() { zoomLevel = 1; panX = 0; panY = 0; applyTransform(); });
+    document.getElementById('btn-auto-layout-inline').addEventListener('click', autoLayoutTree);
+    document.getElementById('btn-export-png-inline').addEventListener('click', exportDiagramPng);
+    document.getElementById('btn-zoom-in-inline').addEventListener('click', function() {
+        setZoom(zoomLevel * 1.2, body.clientWidth / 2, body.clientHeight / 2);
+    });
+    document.getElementById('btn-zoom-out-inline').addEventListener('click', function() {
+        setZoom(zoomLevel / 1.2, body.clientWidth / 2, body.clientHeight / 2);
+    });
+
+    const searchInput = document.getElementById('search-node-inline');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() { searchNodes(this.value); });
+    }
+
+    const btnAddChildDirect = document.getElementById('btn-add-child-direct');
+    if (btnAddChildDirect) {
+        btnAddChildDirect.addEventListener('click', function() {
+            if (selectedNodeId) quickAddChild(selectedNodeId);
+        });
+    }
+
+    const alignTypes = [
+        { id: 'btn-align-left', type: 'left' },
+        { id: 'btn-align-center-h', type: 'center-h' },
+        { id: 'btn-align-right', type: 'right' },
+        { id: 'btn-align-top', type: 'top' },
+        { id: 'btn-align-center-v', type: 'center-v' },
+        { id: 'btn-align-bottom', type: 'bottom' },
+        { id: 'btn-distribute-h', type: 'distribute-h' },
+    ];
+    alignTypes.forEach(function(item) {
+        const btn = document.getElementById(item.id);
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alignSelectedNodes(item.type);
+            });
+        }
+    });
+
+    const btnMultiDelete = document.getElementById('btn-multi-delete');
+    if (btnMultiDelete) {
+        btnMultiDelete.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteSelectedNodes();
+        });
+    }
     document.getElementById('btn-tambah-data-inline').addEventListener('click', function() {
         const r = body.getBoundingClientRect();
         addNode((r.width / 2 - panX) / zoomLevel - 100, (r.height / 2 - panY) / zoomLevel - 30, null);
@@ -3249,13 +4102,25 @@ document.addEventListener('DOMContentLoaded', function() {
             if (serverData.ports) {
                 Object.entries(serverData.ports).forEach(function(e) { connectorPorts.set(e[0], e[1]); });
             }
+            if (serverData.labels) {
+                Object.entries(serverData.labels).forEach(function(e) { connectorLabels.set(e[0], e[1]); });
+            }
+            if (serverData.arrows) {
+                Object.entries(serverData.arrows).forEach(function(e) { connectorArrows.set(e[0], e[1]); });
+            }
+            if (serverData.widths) {
+                Object.entries(serverData.widths).forEach(function(e) { connectorWidths.set(e[0], e[1]); });
+            }
         }
         // Keep localStorage updated with server data
         const d = {
             waypoints: Object.fromEntries(connectorWaypoints),
             colors: Object.fromEntries(connectorColors),
             styles: Object.fromEntries(connectorStyles),
-            ports: Object.fromEntries(connectorPorts)
+            ports: Object.fromEntries(connectorPorts),
+            labels: Object.fromEntries(connectorLabels),
+            arrows: Object.fromEntries(connectorArrows),
+            widths: Object.fromEntries(connectorWidths)
         };
         try { localStorage.setItem('struktur_connector_data', JSON.stringify(d)); } catch (ex) {}
     } catch (ex) {}
