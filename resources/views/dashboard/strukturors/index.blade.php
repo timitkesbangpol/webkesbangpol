@@ -2616,31 +2616,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return;
         }
-                if (n.id === connectFromId) return; // Skip source node
-                var ports = getNodePorts(n);
-                Object.keys(ports).forEach(function(pName) {
-                    var p = ports[pName];
-                    var dist = Math.hypot(p.x - s.x, p.y - s.y);
-                    if (dist < snapDist) { snapDist = dist; snapPort = { x: p.x, y: p.y, port: pName, nodeId: n.id }; }
-                });
-            });
-            if (snapPort) {
-                tempLine.setAttribute('x2', snapPort.x);
-                tempLine.setAttribute('y2', snapPort.y);
-                // Pakai inline style biar ga ditimpa CSS class .connector-dragging
-                tempLine.style.stroke = '#22c55e';
-                tempLine.style.strokeWidth = '3.5';
-                tempLine.style.filter = 'drop-shadow(0 0 6px rgba(34,197,94,0.5))';
-            } else {
-                tempLine.setAttribute('x2', s.x);
-                tempLine.setAttribute('y2', s.y);
-                // Reset ke CSS class default
-                tempLine.style.stroke = '';
-                tempLine.style.strokeWidth = '';
-                tempLine.style.filter = '';
-            }
-            return;
-        }
 
         // Rubber-band
         if (isRubberBanding) { updateRubberBand(e); return; }
