@@ -387,6 +387,52 @@
 .builder-node:hover .node-quick-add-child { display:flex; }
 .node-quick-add-child:hover { transform:translateX(-50%) scale(1.22); background:#58060a; }
 
+/* ---- Node Options Button (...) ---- */
+.node-options-btn {
+    position:absolute; top:-10px; right:20px;
+    width:22px; height:22px; background:#ffffff; color:#475569;
+    border:1px solid #cbd5e1; border-radius:50%; cursor:pointer;
+    font-size:0.85rem; font-weight:bold; display:none; align-items:center; justify-content:center;
+    z-index:22; box-shadow:0 2px 6px rgba(0,0,0,0.12); transition:all 0.15s; line-height:1; padding:0;
+}
+.builder-node:hover .node-options-btn { display:flex; }
+.node-options-btn:hover { background:#f1f5f9; color:#0f172a; transform:scale(1.15); border-color:#94a3b8; }
+
+/* ---- Custom Confirm Modal ---- */
+.builder-modal-overlay {
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background:rgba(15,23,42,0.45); backdrop-filter:blur(4px);
+    z-index:2000; display:flex; align-items:center; justify-content:center;
+}
+.builder-confirm-box {
+    background:#ffffff; border-radius:14px; padding:24px; max-width:390px; width:90%;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2); text-align:center;
+    animation:confirmPop 0.15s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes confirmPop {
+    from { transform:scale(0.92); opacity:0; }
+    to { transform:scale(1); opacity:1; }
+}
+.confirm-icon-wrap.danger {
+    width:52px; height:52px; border-radius:50%; background:#fee2e2; color:#dc2626;
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin:0 auto 14px;
+}
+.builder-confirm-box h3 { font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:8px; }
+.builder-confirm-box p { font-size:0.85rem; color:#64748b; line-height:1.5; margin-bottom:20px; }
+.confirm-btn-group { display:flex; gap:10px; justify-content:center; }
+.btn-confirm-cancel {
+    padding:9px 18px; border-radius:8px; border:1px solid #cbd5e1;
+    background:#f8fafc; color:#475569; font-weight:600; font-size:0.85rem; cursor:pointer;
+    transition:all 0.12s;
+}
+.btn-confirm-cancel:hover { background:#e2e8f0; color:#1e293b; }
+.btn-confirm-danger {
+    padding:9px 20px; border-radius:8px; border:none;
+    background:#dc2626; color:#ffffff; font-weight:600; font-size:0.85rem; cursor:pointer;
+    box-shadow:0 4px 12px rgba(220,38,38,0.3); transition:all 0.12s;
+}
+.btn-confirm-danger:hover { background:#b91c1c; }
+
 /* ---- Line Label Badges ---- */
 .connector-label-rect { fill:#ffffff; rx:4; ry:4; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.12)); }
 .connector-label-text { font-family:'Inter',sans-serif; font-size:9.5px; font-weight:700; fill:#1e293b; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
@@ -740,22 +786,40 @@
     </div>{{-- /builder-layout-flex --}}
 </div>{{-- /container-fluid --}}
 
-{{-- Context Menu (Node & Connector & Waypoint) --}}
+{{-- Context Menu (Node & Connector & Waypoint & Canvas) --}}
 <div class="builder-context-menu-inline" id="context-menu-inline">
     {{-- Node items --}}
-    <div class="ctx-node-item" data-action="add-child" style="display:none;"><i class="fas fa-plus-circle"></i> Tambah Anak</div>
-    <div class="ctx-node-item" data-action="duplicate" style="display:none;"><i class="fas fa-copy"></i> Duplikat</div>
+    <div class="ctx-item ctx-node-item" data-action="add-child" style="display:none;"><i class="fas fa-plus-circle"></i> Tambah Anak</div>
+    <div class="ctx-item ctx-node-item" data-action="duplicate" style="display:none;"><i class="fas fa-copy"></i> Duplikat</div>
     <div class="ctx-sep ctx-node-sep" style="display:none;"></div>
-    <div class="ctx-node-item" data-action="edit" style="display:none;"><i class="fas fa-pen"></i> Edit</div>
-    <div class="ctx-node-item" data-action="delete" style="color:#dc3545;display:none;"><i class="fas fa-trash" style="color:#dc3545;"></i> Hapus</div>
+    <div class="ctx-item ctx-node-item" data-action="edit" style="display:none;"><i class="fas fa-pen"></i> Edit Detail</div>
+    <div class="ctx-item ctx-node-item" data-action="delete" style="color:#dc3545;display:none;"><i class="fas fa-trash" style="color:#dc3545;"></i> Hapus Kotak</div>
 
     {{-- Connector items --}}
-    <div class="ctx-connector-item" data-action="clear-waypoints" style="display:none;"><i class="fas fa-eraser"></i> Hapus Semua Belokan</div>
-    <div class="ctx-connector-item" data-action="simplify" style="display:none;"><i class="fas fa-compress-arrows-alt"></i> Sederhanakan Garis</div>
-    <div class="ctx-connector-item" data-action="edit-waypoints" style="display:none;"><i class="fas fa-sliders-h"></i> Edit Belokan</div>
+    <div class="ctx-item ctx-connector-item" data-action="clear-waypoints" style="display:none;"><i class="fas fa-eraser"></i> Hapus Semua Belokan</div>
+    <div class="ctx-item ctx-connector-item" data-action="simplify" style="display:none;"><i class="fas fa-compress-arrows-alt"></i> Sederhanakan Garis</div>
+    <div class="ctx-item ctx-connector-item" data-action="edit-waypoints" style="display:none;"><i class="fas fa-sliders-h"></i> Edit Belokan Manual</div>
 
     {{-- Waypoint item --}}
-    <div class="ctx-waypoint-item" data-action="remove-wp" style="display:none;"><i class="fas fa-times-circle" style="color:#dc3545;"></i> Hapus Belokan Ini</div>
+    <div class="ctx-item ctx-waypoint-item" data-action="remove-wp" style="display:none;"><i class="fas fa-times-circle" style="color:#dc3545;"></i> Hapus Titik Ini</div>
+
+    {{-- Canvas item --}}
+    <div class="ctx-item ctx-canvas-item" data-action="add-here" style="display:none;"><i class="fas fa-plus-circle"></i> Tambah Kotak di Sini</div>
+</div>
+
+{{-- Custom Confirm Dialog (Non-blocking) --}}
+<div id="builder-confirm-modal" class="builder-modal-overlay" style="display:none;">
+    <div class="builder-confirm-box">
+        <div class="confirm-icon-wrap danger">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 id="confirm-modal-title">Hapus Kotak Jabatan</h3>
+        <p id="confirm-modal-desc">Apakah Anda yakin ingin menghapus kotak ini? Tindakan ini dapat dibatalkan dengan tombol Undo (Ctrl+Z).</p>
+        <div class="confirm-btn-group">
+            <button type="button" class="btn-confirm-cancel" id="confirm-btn-cancel">Batal</button>
+            <button type="button" class="btn-confirm-danger" id="confirm-btn-ok">Ya, Hapus</button>
+        </div>
+    </div>
 </div>
 
 {{-- Coordinate Tooltip --}}
@@ -1345,8 +1409,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     { x: x1, y: y1 },
                     { x: x1, y: dropY },
                     { x: clearX, y: dropY },
-                    { x: clearX, riseY },
-                    { x: x2, riseY },
+                    { x: clearX, y: riseY },
+                    { x: x2, y: riseY },
                     { x: x2, y: y2 }
                 ];
             }
@@ -1454,6 +1518,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filleted smooth corners for orthogonal path (r = 10px)
     function buildSmoothFilletedPath(pts, radius) {
         if (!pts || pts.length === 0) return '';
+        pts = pts.filter(function(p) { return p && typeof p.x === 'number' && !isNaN(p.x) && typeof p.y === 'number' && !isNaN(p.y); });
+        if (pts.length === 0) return '';
         if (pts.length === 1) return 'M ' + pts[0].x + ' ' + pts[0].y;
         if (pts.length === 2 || !radius || radius <= 0) {
             var d = 'M ' + pts[0].x + ' ' + pts[0].y;
@@ -1625,6 +1691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 '<div class="node-port-arrow node-port-arrow-l" data-id="' + node.id + '" title="Tarik relasi">' + arrowSvg + '</div>' +
                 '<div class="node-port-arrow node-port-arrow-r" data-id="' + node.id + '" title="Tarik relasi">' + arrowSvg + '</div>' +
                 '<button class="node-quick-add-child" data-id="' + node.id + '" title="Tambah bawahan langsung">+</button>' +
+                '<button class="node-options-btn" data-id="' + node.id + '" title="Opsi kotak">⋮</button>' +
                 '<button class="node-delete-btn" data-id="' + node.id + '" title="Hapus kotak">×</button>';
 
             el.addEventListener('dblclick', function(e) {
@@ -1674,6 +1741,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.stopPropagation();
                 const id = parseInt(btn.dataset.id);
                 quickAddChild(id);
+            });
+        });
+
+        // Tombol ⋮: menu opsi kotak
+        stage.querySelectorAll('.node-options-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = parseInt(btn.dataset.id);
+                selectNode(id, false);
+                const rect = btn.getBoundingClientRect();
+                showContextMenu(rect.left - 50, rect.bottom + 6, id);
             });
         });
 
@@ -2158,8 +2236,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== CONNECT =====
     let connectFromPort = 'b';
+    let activeSnapPort = null;
     function startConnect(e, fromId, fromPort) {
         isConnecting = true; connectFromId = fromId; connectFromPort = fromPort || 'b';
+        activeSnapPort = null;
         const fromEl = getNodeEl(fromId);
         if (!fromEl) { cleanupConnect(); return; }
         const r = fromEl.getBoundingClientRect(), br = body.getBoundingClientRect();
@@ -2180,7 +2260,14 @@ document.addEventListener('DOMContentLoaded', function() {
         svgEl.appendChild(tempLine);
         e.preventDefault();
     }
-    function cleanupConnect() { if (tempLine) { tempLine.remove(); tempLine = null; } isConnecting = false; connectFromId = null; }
+    function cleanupConnect() {
+        if (tempLine) { tempLine.remove(); tempLine = null; }
+        isConnecting = false;
+        connectFromId = null;
+        activeSnapPort = null;
+        var snapHl = svgEl.querySelector('.connect-snap-highlight');
+        if (snapHl) snapHl.remove();
+    }
     function findNodeAt(cx, cy) {
         const els = document.elementsFromPoint(cx, cy);
         for (var i = 0; i < els.length; i++) {
@@ -2359,111 +2446,123 @@ document.addEventListener('DOMContentLoaded', function() {
         // SVG background → let bubble to body (starts rubber-band)
     });
 
+    let nodeDragRaf = null;
+    let pendingDragEvent = null;
+
+    function updateDraggedNodePositions(e) {
+        if (dragNodeId === null) return;
+        const el = getNodeEl(dragNodeId); if (!el) return;
+        const br = body.getBoundingClientRect();
+        var rawX = (e.clientX - panX - br.left - dragOffsetX) / zoomLevel;
+        var rawY = (e.clientY - panY - br.top  - dragOffsetY) / zoomLevel;
+
+        // ===== ALIGNMENT SNAP: check edges and centers against other nodes =====
+        var draggedNode = getNodeById(dragNodeId);
+        alignSnapX = null; alignSnapY = null; alignGuides = [];
+        var bestDiffX = ALIGN_SNAP, bestDiffY = ALIGN_SNAP;
+
+        if (draggedNode) {
+            var dragSet = Object.keys(dragStartPositions).map(Number);
+            var dRect = getNodeRect(draggedNode);
+            var dL = rawX, dR = rawX + dRect.w, dC = rawX + dRect.w / 2;
+            var dT = rawY, dB = rawY + dRect.h, dM = rawY + dRect.h / 2;
+
+            nodes.forEach(function(other) {
+                if (dragSet.includes(other.id) || other.x === undefined || other.y === undefined) return;
+                var oRect = getNodeRect(other);
+                var oL = other.x, oR = other.x + oRect.w, oC = other.x + oRect.w / 2;
+                var oT = other.y, oB = other.y + oRect.h, oM = other.y + oRect.h / 2;
+
+                var hCands = [
+                    { dPos: dC, oPos: oC },
+                    { dPos: dL, oPos: oL },
+                    { dPos: dR, oPos: oR },
+                    { dPos: dL, oPos: oR },
+                    { dPos: dR, oPos: oL }
+                ];
+                hCands.forEach(function(hc) {
+                    var diff = hc.oPos - hc.dPos;
+                    var absDiff = Math.abs(diff);
+                    if (absDiff < bestDiffX) {
+                        bestDiffX = absDiff;
+                        alignSnapX = diff;
+                        var gStart = Math.min(dT, oT) - 30;
+                        var gEnd   = Math.max(dB, oB) + 30;
+                        alignGuides = alignGuides.filter(function(g) { return g.orient !== 'v'; });
+                        alignGuides.push({ orient: 'v', pos: hc.oPos, start: gStart, end: gEnd });
+                    }
+                });
+
+                var vCands = [
+                    { dPos: dM, oPos: oM },
+                    { dPos: dT, oPos: oT },
+                    { dPos: dB, oPos: oB },
+                    { dPos: dT, oPos: oB },
+                    { dPos: dB, oPos: oT }
+                ];
+                vCands.forEach(function(vc) {
+                    var diff = vc.oPos - vc.dPos;
+                    var absDiff = Math.abs(diff);
+                    if (absDiff < bestDiffY) {
+                        bestDiffY = absDiff;
+                        alignSnapY = diff;
+                        var gStart = Math.min(dL, oL) - 30;
+                        var gEnd   = Math.max(dR, oR) + 30;
+                        alignGuides = alignGuides.filter(function(g) { return g.orient !== 'h'; });
+                        alignGuides.push({ orient: 'h', pos: vc.oPos, start: gStart, end: gEnd });
+                    }
+                });
+            });
+        }
+
+        var alignedX = alignSnapX !== null 
+            ? Math.round(Math.max(0, Math.min(3000, rawX + alignSnapX)))
+            : snapV(Math.round(Math.max(0, Math.min(3000, rawX))));
+
+        var alignedY = alignSnapY !== null 
+            ? Math.round(Math.max(0, Math.min(2500, rawY + alignSnapY)))
+            : snapV(Math.round(Math.max(0, Math.min(2500, rawY))));
+
+        const sp = dragStartPositions[dragNodeId];
+        if (sp) {
+            const dx = alignedX - sp.x, dy = alignedY - sp.y;
+            Object.keys(dragStartPositions).forEach(function(nidStr) {
+                const nid = parseInt(nidStr);
+                const n = getNodeById(nid); if (!n) return;
+                const ns = dragStartPositions[nid];
+                n.x = Math.max(0, ns.x + dx); n.y = Math.max(0, ns.y + dy);
+                const nel = getNodeEl(nid);
+                if (nel) { nel.style.left = n.x + 'px'; nel.style.top = n.y + 'px'; }
+            });
+            const pn = getNodeById(selectedNodeId);
+            if (pn) {
+                document.getElementById('edit-x-inline').textContent = pn.x;
+                document.getElementById('edit-y-inline').textContent = pn.y;
+            }
+        }
+        renderConnectors();
+        renderAlignGuides();
+    }
+
     document.addEventListener('mousemove', function(e) {
-        // Node drag (single or multi) — with draw.io style alignment snap
+        // Node drag (single or multi) — throttled with requestAnimationFrame for 60fps smoothness
         if (dragNodeId !== null) {
             if (!isDragging) {
                 var dist = Math.hypot(e.clientX - dragStartClientX, e.clientY - dragStartClientY);
-                if (dist < 4) return; // Must move at least 4px to be considered a drag, not just a click!
+                if (dist < 4) return;
                 isDragging = true;
                 dragHasMoved = true;
                 const el = getNodeEl(dragNodeId); if (el) el.classList.add('dragging');
             }
-            const el = getNodeEl(dragNodeId); if (!el) return;
-            const br = body.getBoundingClientRect();
-            var rawX = (e.clientX - panX - br.left - dragOffsetX) / zoomLevel;
-            var rawY = (e.clientY - panY - br.top  - dragOffsetY) / zoomLevel;
-
-            // ===== ALIGNMENT SNAP: check edges and centers against other nodes =====
-            var draggedNode = getNodeById(dragNodeId);
-            alignSnapX = null; alignSnapY = null; alignGuides = [];
-            var bestDiffX = ALIGN_SNAP, bestDiffY = ALIGN_SNAP;
-
-            if (draggedNode) {
-                var dragSet = Object.keys(dragStartPositions).map(Number);
-                var dRect = getNodeRect(draggedNode);
-                var dL = rawX, dR = rawX + dRect.w, dC = rawX + dRect.w / 2;
-                var dT = rawY, dB = rawY + dRect.h, dM = rawY + dRect.h / 2;
-
-                nodes.forEach(function(other) {
-                    if (dragSet.includes(other.id) || other.x === undefined || other.y === undefined) return;
-                    var oRect = getNodeRect(other);
-                    var oL = other.x, oR = other.x + oRect.w, oC = other.x + oRect.w / 2;
-                    var oT = other.y, oB = other.y + oRect.h, oM = other.y + oRect.h / 2;
-
-                    // Horizontal alignments: Center-Center (highest priority), Left-Left, Right-Right
-                    var hCands = [
-                        { dPos: dC, oPos: oC }, // Center
-                        { dPos: dL, oPos: oL }, // Left-to-Left
-                        { dPos: dR, oPos: oR }, // Right-to-Right
-                        { dPos: dL, oPos: oR }, // Left-to-Right
-                        { dPos: dR, oPos: oL }  // Right-to-Left
-                    ];
-                    hCands.forEach(function(hc) {
-                        var diff = hc.oPos - hc.dPos;
-                        var absDiff = Math.abs(diff);
-                        if (absDiff < bestDiffX) {
-                            bestDiffX = absDiff;
-                            alignSnapX = diff;
-                            var gStart = Math.min(dT, oT) - 30;
-                            var gEnd   = Math.max(dB, oB) + 30;
-                            alignGuides = alignGuides.filter(function(g) { return g.orient !== 'v'; });
-                            alignGuides.push({ orient: 'v', pos: hc.oPos, start: gStart, end: gEnd });
-                        }
-                    });
-
-                    // Vertical alignments: Middle-Middle, Top-Top, Bottom-Bottom
-                    var vCands = [
-                        { dPos: dM, oPos: oM }, // Middle
-                        { dPos: dT, oPos: oT }, // Top-to-Top
-                        { dPos: dB, oPos: oB }, // Bottom-to-Bottom
-                        { dPos: dT, oPos: oB }, // Top-to-Bottom
-                        { dPos: dB, oPos: oT }  // Bottom-to-Top
-                    ];
-                    vCands.forEach(function(vc) {
-                        var diff = vc.oPos - vc.dPos;
-                        var absDiff = Math.abs(diff);
-                        if (absDiff < bestDiffY) {
-                            bestDiffY = absDiff;
-                            alignSnapY = diff;
-                            var gStart = Math.min(dL, oL) - 30;
-                            var gEnd   = Math.max(dR, oR) + 30;
-                            alignGuides = alignGuides.filter(function(g) { return g.orient !== 'h'; });
-                            alignGuides.push({ orient: 'h', pos: vc.oPos, start: gStart, end: gEnd });
-                        }
-                    });
+            pendingDragEvent = e;
+            if (!nodeDragRaf) {
+                nodeDragRaf = requestAnimationFrame(function() {
+                    nodeDragRaf = null;
+                    if (pendingDragEvent && dragNodeId !== null) {
+                        updateDraggedNodePositions(pendingDragEvent);
+                    }
                 });
             }
-
-            // Magnetic snap has PRIORITY! When magnetized, lock directly onto alignment coordinate.
-            // When free of magnetic snap, fallback to granular grid snap.
-            var alignedX = alignSnapX !== null 
-                ? Math.round(Math.max(0, Math.min(3000, rawX + alignSnapX)))
-                : snapV(Math.round(Math.max(0, Math.min(3000, rawX))));
-
-            var alignedY = alignSnapY !== null 
-                ? Math.round(Math.max(0, Math.min(2500, rawY + alignSnapY)))
-                : snapV(Math.round(Math.max(0, Math.min(2500, rawY))));
-
-            const sp = dragStartPositions[dragNodeId];
-            if (sp) {
-                const dx = alignedX - sp.x, dy = alignedY - sp.y;
-                Object.keys(dragStartPositions).forEach(function(nidStr) {
-                    const nid = parseInt(nidStr);
-                    const n = getNodeById(nid); if (!n) return;
-                    const ns = dragStartPositions[nid];
-                    n.x = Math.max(0, ns.x + dx); n.y = Math.max(0, ns.y + dy);
-                    const nel = getNodeEl(nid);
-                    if (nel) { nel.style.left = n.x + 'px'; nel.style.top = n.y + 'px'; }
-                });
-                const pn = getNodeById(selectedNodeId);
-                if (pn) {
-                    document.getElementById('edit-x-inline').textContent = pn.x;
-                    document.getElementById('edit-y-inline').textContent = pn.y;
-                }
-            }
-            renderConnectors();
-            renderAlignGuides();
             return;
         }
 
@@ -2477,10 +2576,46 @@ document.addEventListener('DOMContentLoaded', function() {
         // Connecting (temp line) — with magnetic snap ke port + indikator HIJAU (draw.io style)
         if (isConnecting && connectFromId !== null && tempLine) {
             var s = clientToStage(e.clientX, e.clientY);
-            // Magnetic snap: find nearest port (radius lebih besar)
-            var snapDist = 60;
+            // Magnetic snap: scaled by zoomLevel
+            var snapDist = Math.max(65, 45 / zoomLevel);
             var snapPort = null;
             nodes.forEach(function(n) {
+                if (n.id === connectFromId) return; // Skip source node
+                var ports = getNodePorts(n);
+                Object.keys(ports).forEach(function(pName) {
+                    var p = ports[pName];
+                    var dist = Math.hypot(p.x - s.x, p.y - s.y);
+                    if (dist < snapDist) { snapDist = dist; snapPort = { x: p.x, y: p.y, port: pName, nodeId: n.id }; }
+                });
+            });
+            activeSnapPort = snapPort;
+            var oldHl = svgEl.querySelector('.connect-snap-highlight');
+            if (oldHl) oldHl.remove();
+
+            if (snapPort) {
+                tempLine.setAttribute('x2', snapPort.x);
+                tempLine.setAttribute('y2', snapPort.y);
+                tempLine.style.stroke = '#22c55e';
+                tempLine.style.strokeWidth = '3.5';
+                tempLine.style.filter = 'drop-shadow(0 0 8px rgba(34,197,94,0.6))';
+
+                var hl = mkSvg('ellipse');
+                hl.setAttribute('cx', snapPort.x); hl.setAttribute('cy', snapPort.y);
+                hl.setAttribute('rx', '18'); hl.setAttribute('ry', '18');
+                hl.setAttribute('class', 'connect-snap-highlight');
+                hl.style.fill = 'rgba(34,197,94,0.3)';
+                hl.style.stroke = '#22c55e';
+                hl.style.strokeWidth = '2';
+                svgEl.appendChild(hl);
+            } else {
+                tempLine.setAttribute('x2', s.x);
+                tempLine.setAttribute('y2', s.y);
+                tempLine.style.stroke = '#3b82f6';
+                tempLine.style.strokeWidth = '2.5';
+                tempLine.style.filter = '';
+            }
+            return;
+        }
                 if (n.id === connectFromId) return; // Skip source node
                 var ports = getNodePorts(n);
                 Object.keys(ports).forEach(function(pName) {
@@ -2650,6 +2785,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.addEventListener('mouseup', function(e) {
+        // Cancel / flush pending node drag RAF
+        if (nodeDragRaf) {
+            cancelAnimationFrame(nodeDragRaf);
+            nodeDragRaf = null;
+        }
+        if (pendingDragEvent && dragNodeId !== null) {
+            updateDraggedNodePositions(pendingDragEvent);
+            pendingDragEvent = null;
+        }
+
         // Clear hold timer
         if (connectorHoldTimer) { clearTimeout(connectorHoldTimer); connectorHoldTimer = null; }
         holdConnectorKey = null;
@@ -2779,16 +2924,29 @@ document.addEventListener('DOMContentLoaded', function() {
             pushUndo(); persistConnectorData(); return;
         }
         if (isConnecting && connectFromId !== null) {
-            const target = findNodeAt(e.clientX, e.clientY);
+            let targetNode = null;
             let targetPort = 't';
-            const hitHandle = document.elementFromPoint(e.clientX, e.clientY);
-            if (hitHandle && hitHandle.classList.contains('node-port-arrow')) {
-                if (hitHandle.classList.contains('node-port-arrow-t')) targetPort = 't';
-                if (hitHandle.classList.contains('node-port-arrow-b')) targetPort = 'b';
-                if (hitHandle.classList.contains('node-port-arrow-l')) targetPort = 'l';
-                if (hitHandle.classList.contains('node-port-arrow-r')) targetPort = 'r';
+
+            if (activeSnapPort) {
+                targetNode = getNodeById(activeSnapPort.nodeId);
+                targetPort = activeSnapPort.port;
+            } else {
+                targetNode = findNodeAt(e.clientX, e.clientY);
+                if (targetNode && targetNode.id !== connectFromId) {
+                    const hitHandle = document.elementFromPoint(e.clientX, e.clientY);
+                    if (hitHandle && hitHandle.classList.contains('node-port-arrow')) {
+                        if (hitHandle.classList.contains('node-port-arrow-t')) targetPort = 't';
+                        if (hitHandle.classList.contains('node-port-arrow-b')) targetPort = 'b';
+                        if (hitHandle.classList.contains('node-port-arrow-l')) targetPort = 'l';
+                        if (hitHandle.classList.contains('node-port-arrow-r')) targetPort = 'r';
+                    } else {
+                        const autoPorts = getBestPorts(getNodeById(connectFromId), targetNode);
+                        targetPort = autoPorts.td;
+                    }
+                }
             }
-            if (target && target.id !== connectFromId) {
+
+            if (targetNode && targetNode.id !== connectFromId) {
                 const cn = getNodeById(connectFromId);
                 if (cn) {
                     pushUndo();
@@ -2797,13 +2955,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Jika ditarik dari port bawah ('b') / sisi lain -> cn adalah atasan, target adalah bawahan
                     let parentNode, childNode, pPort, cPort;
                     if (connectFromPort === 't') {
-                        parentNode = target;
+                        parentNode = targetNode;
                         childNode = cn;
                         pPort = targetPort || 'b';
                         cPort = connectFromPort;
                     } else {
                         parentNode = cn;
-                        childNode = target;
+                        childNode = targetNode;
                         pPort = connectFromPort || 'b';
                         cPort = targetPort || 't';
                     }
@@ -2811,6 +2969,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!wouldCreateCycle(childNode.id, parentNode.id)) {
                         childNode.parent_id = parentNode.id;
                         const key = parentNode.id + '-' + childNode.id;
+                        // Hapus waypoint manual lama agar garis baru langsung otomatis rapi
+                        connectorWaypoints.delete(key);
                         connectorPorts.set(key, { fromPort: pPort, toPort: cPort });
                         renderConnectors();
                         if (selectedNodeId === childNode.id) {
@@ -2822,9 +2982,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast('Sirkular! Tidak bisa menghubungkan hirarki melingkar', 'error');
                     }
                 }
-            } else if (!target) {
-                const r = body.getBoundingClientRect();
-                addNode((e.clientX - panX - r.left) / zoomLevel - 100, (e.clientY - panY - r.top) / zoomLevel - 30, connectFromId);
             }
             cleanupConnect();
             return;
@@ -2943,7 +3100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function hideAllCtxItems() {
-        document.querySelectorAll('.ctx-node-item, .ctx-connector-item, .ctx-waypoint-item').forEach(function(el) {
+        document.querySelectorAll('.ctx-item').forEach(function(el) {
             el.style.display = 'none';
         });
         document.querySelectorAll('.ctx-node-sep').forEach(function(el) { el.style.display = 'none'; });
@@ -3222,36 +3379,78 @@ document.addEventListener('DOMContentLoaded', function() {
         pushUndo(); nodes.push(node); renderNodes(); selectNode(newId, false); showToast('Kotak diduplikasi', 'success');
         saveSingleNode(node).catch(function() {});
     }
-    function deleteNode(id) {
-        if (!confirm('Hapus kotak ini?')) return;
-        pushUndo();
-        nodes.forEach(function(n) { if (n.parent_id === id) n.parent_id = null; });
-        nodes = nodes.filter(function(n) { return n.id !== id; });
-        selectedNodeIds.delete(id);
-        if (selectedNodeId === id) {
-            selectedNodeId = selectedNodeIds.size > 0 ? [...selectedNodeIds][0] : null;
-            if (!selectedNodeId) { deselectAll(); panel.classList.remove('open'); }
-        }
-        renderNodes();
-        if (selectedNodeId) {
-            const sn = getNodeById(selectedNodeId);
-            if (sn) populateParentDropdown(sn.id, sn.parent_id);
-        }
-        if (id > 0) fetch('{{ url('/strukturors-builder/delete') }}/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' } }).catch(function() {});
-        showToast('Kotak berhasil dihapus', 'info');
+    // ===== CUSTOM CONFIRM DIALOG (Non-blocking) =====
+    function openConfirmDialog(title, desc, confirmBtnText = 'Ya, Hapus') {
+        return new Promise(function(resolve) {
+            const modal = document.getElementById('builder-confirm-modal');
+            const titleEl = document.getElementById('confirm-modal-title');
+            const descEl = document.getElementById('confirm-modal-desc');
+            const okBtn = document.getElementById('confirm-btn-ok');
+            const cancelBtn = document.getElementById('confirm-btn-cancel');
+
+            if (!modal) {
+                resolve(window.confirm(desc || title));
+                return;
+            }
+
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+            okBtn.textContent = confirmBtnText;
+            modal.style.display = 'flex';
+
+            function cleanup() {
+                modal.style.display = 'none';
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+                modal.removeEventListener('click', onOverlay);
+            }
+            function onOk(e) { e.stopPropagation(); cleanup(); resolve(true); }
+            function onCancel(e) { e.stopPropagation(); cleanup(); resolve(false); }
+            function onOverlay(e) { if (e.target === modal) { cleanup(); resolve(false); } }
+
+            okBtn.addEventListener('click', onOk);
+            cancelBtn.addEventListener('click', onCancel);
+            modal.addEventListener('click', onOverlay);
+        });
     }
-    function deleteSelectedNodes() {
-        if (selectedNodeIds.size === 0) return;
-        if (!confirm('Hapus ' + selectedNodeIds.size + ' kotak yang dipilih?')) return;
-        pushUndo();
-        const toDelete = [...selectedNodeIds];
-        toDelete.forEach(function(id) {
+
+    function deleteNode(id) {
+        const node = getNodeById(id);
+        const jabName = node ? (node.jabatan || 'kotak ini') : 'kotak ini';
+        openConfirmDialog('Hapus Kotak Jabatan', 'Apakah Anda yakin ingin menghapus kotak "' + jabName + '"?').then(function(confirmed) {
+            if (!confirmed) return;
+            pushUndo();
             nodes.forEach(function(n) { if (n.parent_id === id) n.parent_id = null; });
             nodes = nodes.filter(function(n) { return n.id !== id; });
+            selectedNodeIds.delete(id);
+            if (selectedNodeId === id) {
+                selectedNodeId = selectedNodeIds.size > 0 ? [...selectedNodeIds][0] : null;
+                if (!selectedNodeId) { deselectAll(); panel.classList.remove('open'); }
+            }
+            renderNodes();
+            if (selectedNodeId) {
+                const sn = getNodeById(selectedNodeId);
+                if (sn) populateParentDropdown(sn.id, sn.parent_id);
+            }
             if (id > 0) fetch('{{ url('/strukturors-builder/delete') }}/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' } }).catch(function() {});
+            showToast('Kotak berhasil dihapus', 'info');
         });
-        deselectAll(); panel.classList.remove('open');
-        renderNodes(); showToast(toDelete.length + ' kotak dihapus', 'info');
+    }
+
+    function deleteSelectedNodes() {
+        if (selectedNodeIds.size === 0) return;
+        openConfirmDialog('Hapus Beberapa Kotak', 'Apakah Anda yakin ingin menghapus ' + selectedNodeIds.size + ' kotak yang dipilih?').then(function(confirmed) {
+            if (!confirmed) return;
+            pushUndo();
+            const toDelete = [...selectedNodeIds];
+            toDelete.forEach(function(id) {
+                nodes.forEach(function(n) { if (n.parent_id === id) n.parent_id = null; });
+                nodes = nodes.filter(function(n) { return n.id !== id; });
+                if (id > 0) fetch('{{ url('/strukturors-builder/delete') }}/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' } }).catch(function() {});
+            });
+            deselectAll(); panel.classList.remove('open');
+            renderNodes(); showToast(toDelete.length + ' kotak dihapus', 'info');
+        });
     }
 
     function saveSingleNode(node, imageFile = null, removeImage = false) {
@@ -3442,13 +3641,23 @@ document.addEventListener('DOMContentLoaded', function() {
         hideAllCtxItems();
         document.querySelectorAll('.ctx-node-item').forEach(function(el) { el.style.display = 'flex'; });
         document.querySelectorAll('.ctx-node-sep').forEach(function(el) { el.style.display = 'block'; });
-        contextMenu.style.left = x + 'px'; contextMenu.style.top = y + 'px';
-        contextMenu.classList.add('show'); contextMenu.dataset.nodeId = nodeId;
+        contextMenu.dataset.nodeId = nodeId;
+        contextMenu.style.left = Math.min(window.innerWidth - 180, Math.max(10, x)) + 'px';
+        contextMenu.style.top = Math.min(window.innerHeight - 200, Math.max(10, y)) + 'px';
+        contextMenu.classList.add('show');
     }
     contextMenu.addEventListener('click', function(e) {
+        e.stopPropagation();
         const item = e.target.closest('.ctx-item'); if (!item) return;
         const action = item.dataset.action;
         contextMenu.classList.remove('show');
+
+        if (action === 'add-here') {
+            const cx = parseFloat(item.dataset.canvasX) || 100;
+            const cy = parseFloat(item.dataset.canvasY) || 100;
+            addNode(cx, cy, null);
+            return;
+        }
 
         // Connector actions
         if (action === 'clear-waypoints') {
@@ -3484,16 +3693,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const nodeId = parseInt(contextMenu.dataset.nodeId);
         if (!isNaN(nodeId)) {
             switch (action) {
-                case 'add-child': { const n = getNodeById(nodeId); if (n) addNode((n.x || 0) + 20, (n.y || 0) + 120, nodeId); break; }
+                case 'add-child': {
+                    quickAddChild(nodeId);
+                    break;
+                }
                 case 'duplicate': duplicateNode(nodeId); break;
-                case 'edit': selectNode(nodeId, false); document.getElementById('edit-jabatan-inline').focus(); break;
+                case 'edit': selectNode(nodeId, false); panel.classList.add('open'); document.getElementById('edit-jabatan-inline').focus(); break;
                 case 'delete': deleteNode(nodeId); break;
             }
         }
     });
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#context-menu-inline')) return;
         contextMenu.classList.remove('show');
-        contextMenu.innerHTML = ctxMenuOriginalHtml;
         contextMenu.dataset.connectorKey = '';
         contextMenu.dataset.wpKey = '';
         contextMenu.dataset.wpIdx = '';
@@ -3501,14 +3713,19 @@ document.addEventListener('DOMContentLoaded', function() {
     body.addEventListener('contextmenu', function(e) {
         if (e.target.closest('.builder-node')) return;
         if (e.target.closest('#svg-connectors-inline')) return;
+        if (e.target.closest('#context-menu-inline')) return;
         e.preventDefault();
         const r = body.getBoundingClientRect();
         const x = (e.clientX - panX - r.left) / zoomLevel, y = (e.clientY - panY - r.top) / zoomLevel;
-        contextMenu.innerHTML = '<div class="ctx-item" data-action="add-here"><i class="fas fa-plus-circle"></i> Tambah Node di Sini</div>';
-        contextMenu.querySelector('[data-action="add-here"]').addEventListener('click', function(ev) {
-            ev.stopPropagation(); addNode(x, y, null); contextMenu.classList.remove('show'); contextMenu.innerHTML = ctxMenuOriginalHtml;
-        });
-        contextMenu.style.left = e.clientX + 'px'; contextMenu.style.top = e.clientY + 'px';
+        hideAllCtxItems();
+        const addHere = contextMenu.querySelector('.ctx-canvas-item');
+        if (addHere) {
+            addHere.style.display = 'flex';
+            addHere.dataset.canvasX = x;
+            addHere.dataset.canvasY = y;
+        }
+        contextMenu.style.left = Math.min(window.innerWidth - 180, Math.max(10, e.clientX)) + 'px';
+        contextMenu.style.top = Math.min(window.innerHeight - 150, Math.max(10, e.clientY)) + 'px';
         contextMenu.classList.add('show');
     });
 
