@@ -40,6 +40,10 @@ class OtpController extends Controller
      */
     public function showVerifyForm(Request $request)
     {
+        if (Auth::check()) {
+            return redirect()->intended('/home');
+        }
+
         if (!$request->session()->has('otp_auth')) {
             return redirect()->route('login');
         }
@@ -76,6 +80,9 @@ class OtpController extends Controller
         }
 
         if (!$request->session()->has('otp_auth')) {
+            if (Auth::check()) {
+                return redirect()->intended('/home');
+            }
             return redirect()->route('login')->withErrors([
                 'email' => 'Sesi login telah berakhir. Silakan login kembali.',
             ]);

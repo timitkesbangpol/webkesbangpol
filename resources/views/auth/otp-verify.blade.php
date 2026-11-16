@@ -172,41 +172,87 @@
             const input = document.getElementById('otp');
             const form = document.getElementById('otp-form');
             const submitBtn = document.getElementById('btn-submit-otp');
+            const resendForm = document.getElementById('resend-form');
+            const resendBtn = document.getElementById('btn-resend-otp');
+            let isSubmitting = false;
 
-            if (input) {
+            function triggerSubmit() {
+                if (isSubmitting) return;
+                const val = input ? input.value.trim() : '';
+                if (val.length !== 6) return;
+
+                isSubmitting = true;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.75';
+                    submitBtn.style.pointerEvents = 'none';
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    if (btnText) btnText.textContent = 'Memverifikasi...';
+                }
+                if (input) {
+                    input.readOnly = true;
+                }
+                form.submit();
+            }
+
+            if (input && form) {
                 // Hanya izinkan angka numerik
                 input.addEventListener('input', function (e) {
                     this.value = this.value.replace(/\D/g, '');
 
                     // Auto-submit saat 6 digit telah terisi
                     if (this.value.length === 6) {
-                        if (submitBtn) {
-                            submitBtn.querySelector('.btn-text').textContent = 'Memverifikasi...';
-                        }
-                        form.submit();
+                        triggerSubmit();
                     }
                 });
 
-                // Loading effect saat submit manual
-                form.addEventListener('submit', function () {
-                    if (submitBtn) {
-                        submitBtn.querySelector('.btn-text').textContent = 'Memverifikasi...';
+                // Cegah double submit saat submit manual (klik tombol atau enter)
+                form.addEventListener('submit', function (e) {
+                    if (isSubmitting) {
+                        e.preventDefault();
+                        return false;
                     }
+                    const val = input.value.trim();
+                    if (val.length !== 6) {
+                        e.preventDefault();
+                        input.focus();
+                        return false;
+                    }
+                    isSubmitting = true;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.75';
+                        submitBtn.style.pointerEvents = 'none';
+                        const btnText = submitBtn.querySelector('.btn-text');
+                        if (btnText) btnText.textContent = 'Memverifikasi...';
+                    }
+                    input.readOnly = true;
+                });
+            }
+
+            // Proteksi double submit form resend
+            if (resendForm && resendBtn) {
+                resendForm.addEventListener('submit', function (e) {
+                    if (resendBtn.disabled) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    resendBtn.disabled = true;
+                    resendBtn.textContent = 'Mengirim kode baru...';
                 });
             }
 
             // Hitung mundur tombol kirim ulang
             let timeLeft = parseInt('{{ $remainingCooldown ?? 60 }}', 10);
-            const btn = document.getElementById('btn-resend-otp');
             const countdownEl = document.getElementById('countdown');
 
-            if (timeLeft > 0 && btn) {
+            if (timeLeft > 0 && resendBtn) {
                 const timer = setInterval(function () {
                     timeLeft--;
                     if (timeLeft <= 0) {
                         clearInterval(timer);
-                        btn.disabled = false;
-                        btn.innerHTML = '🔄 Kirim Ulang Kode OTP Sekarang';
+                        resendBtn.disabled = false;
+                        resendBtn.innerHTML = '🔄 Kirim Ulang Kode OTP Sekarang';
                     } else {
                         if (countdownEl) {
                             countdownEl.textContent = timeLeft;
@@ -214,6 +260,16 @@
                     }
                 }, 1000);
             }
+
+            // Keep-alive: kirim heartbeat setiap 90 detik agar session & CSRF tidak kedaluwarsa saat pengguna membuka tab Gmail
+            setInterval(function () {
+                if (!isSubmitting) {
+                    fetch('{{ route("otp.verify") }}', {
+                        method: 'GET',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    }).catch(function () {});
+                }
+            }, 90000);
         });
     </script>
 @endsection
