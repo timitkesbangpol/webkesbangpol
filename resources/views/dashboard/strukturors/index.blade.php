@@ -234,8 +234,9 @@
 .wp-handle { fill:#fff; stroke:#3b82f6; stroke-width:2.5; cursor:grab; filter:drop-shadow(0 1px 4px rgba(0,0,0,0.2)); transition:all 0.1s; }
 .wp-handle:hover { fill:#dbeafe; stroke-width:3; stroke:#2563eb; }
 .wp-handle:active { cursor:grabbing; }
-.wp-midpoint-handle { fill:#fff; stroke:#94a3b8; stroke-width:2; cursor:crosshair; opacity:0.5; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.15)); transition:all 0.15s; }
-.wp-midpoint-handle:hover { fill:#dbeafe; stroke:#2563eb; stroke-width:2.5; opacity:1; }
+.wp-midpoint-handle { fill:#fff; stroke:#3b82f6; stroke-width:2.5; opacity:0.85; filter:drop-shadow(0 1px 4px rgba(0,0,0,0.2)); transition:transform 0.12s, fill 0.12s, opacity 0.12s; }
+.wp-midpoint-handle:hover { fill:#2563eb; stroke:#1d4ed8; stroke-width:3; opacity:1; transform:scale(1.3); }
+.wp-midpoint-handle:active, .wp-midpoint-handle.dragging { fill:#1d4ed8; stroke:#1e40af; opacity:1; transform:scale(1.4); }
 /* Draw.io style: selected connector glow */
 .connector-path-selected { filter:drop-shadow(0 0 4px var(--connector-color, rgba(59,130,246,0.5))); }
 /* Draw.io style: temporary connector during drag */
@@ -915,13 +916,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let isDraggingWaypoint = false;
     let draggingWpKey = null, draggingWpIdx = null;
 
-    // Segment drag (drag □ midpoint → insert new waypoint)
+    // Segment drag (slide orthogonal crossbar without adding bends)
     let isDraggingSegment = false;
     let draggingSegKey = null;
-    let draggingSegInsertAt = null; // integer index, or -1 for 'default-mid'
+    let draggingSegIdx = null;
+    let draggingSegOrient = 'h'; // 'h' or 'v'
     let segDragHasMoved = false;
     let segDragClientStart = { x: 0, y: 0 };
-    let segDragStartedWp = false;
 
     // Connector long-press (color picker)
     let connectorHoldTimer = null, holdConnectorKey = null;
@@ -1353,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== REBUILT SMART ORG-CHART ORTHOGONAL ROUTING =====
     function getSmartOrthogonalPts(x1, y1, x2, y2, fd, td, wps) {
-        if (wps && wps.length > 0) {
+        if (wps && wps.length > 1) {
             var pts = [{ x: x1, y: y1 }];
             for (var i = 0; i < wps.length; i++) {
                 var last = pts[pts.length - 1];
@@ -1393,7 +1394,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Bottom to Top (Hierarki Standar Atasan -> Bawahan)
         if (fd === 'b' && td === 't') {
             if (y2 >= y1 + STUB * 2) {
-                var midY = Math.round((y1 + y2) / 2);
+                var midY = (wps && wps.length === 1 && typeof wps[0].y === 'number')
+                    ? Math.max(y1 + 8, Math.min(y2 - 8, wps[0].y))
+                    : Math.round((y1 + y2) / 2);
                 return [
                     { x: x1, y: y1 },
                     { x: x1, y: midY },
@@ -1403,7 +1406,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 var dropY = y1 + STUB;
                 var sideOffset = 160;
-                var clearX = x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset;
+                var clearX = (wps && wps.length === 1 && typeof wps[0].x === 'number')
+                    ? wps[0].x
+                    : (x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset);
                 var riseY = y2 - STUB;
                 return [
                     { x: x1, y: y1 },
@@ -1419,7 +1424,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Top to Bottom (Inverted)
         if (fd === 't' && td === 'b') {
             if (y1 >= y2 + STUB * 2) {
-                var midY = Math.round((y1 + y2) / 2);
+                var midY = (wps && wps.length === 1 && typeof wps[0].y === 'number')
+                    ? Math.max(y2 + 8, Math.min(y1 - 8, wps[0].y))
+                    : Math.round((y1 + y2) / 2);
                 return [
                     { x: x1, y: y1 },
                     { x: x1, y: midY },
@@ -1429,7 +1436,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 var riseY = y1 - STUB;
                 var sideOffset = 160;
-                var clearX = x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset;
+                var clearX = (wps && wps.length === 1 && typeof wps[0].x === 'number')
+                    ? wps[0].x
+                    : (x2 >= x1 ? Math.max(x1, x2) + sideOffset : Math.min(x1, x2) - sideOffset);
                 var dropY = y2 + STUB;
                 return [
                     { x: x1, y: y1 },
@@ -1445,7 +1454,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Right to Left (Horizontal)
         if (fd === 'r' && td === 'l') {
             if (x2 >= x1 + STUB * 2) {
-                var midX = Math.round((x1 + x2) / 2);
+                var midX = (wps && wps.length === 1 && typeof wps[0].x === 'number')
+                    ? Math.max(x1 + 8, Math.min(x2 - 8, wps[0].x))
+                    : Math.round((x1 + x2) / 2);
                 return [
                     { x: x1, y: y1 },
                     { x: midX, y: y1 },
@@ -1454,7 +1465,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ];
             } else {
                 var rightX = x1 + STUB;
-                var clearY = y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60;
+                var clearY = (wps && wps.length === 1 && typeof wps[0].y === 'number')
+                    ? wps[0].y
+                    : (y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60);
                 var leftX = x2 - STUB;
                 return [
                     { x: x1, y: y1 },
@@ -1470,7 +1483,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Left to Right
         if (fd === 'l' && td === 'r') {
             if (x1 >= x2 + STUB * 2) {
-                var midX = Math.round((x1 + x2) / 2);
+                var midX = (wps && wps.length === 1 && typeof wps[0].x === 'number')
+                    ? Math.max(x2 + 8, Math.min(x1 - 8, wps[0].x))
+                    : Math.round((x1 + x2) / 2);
                 return [
                     { x: x1, y: y1 },
                     { x: midX, y: y1 },
@@ -1479,7 +1494,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ];
             } else {
                 var leftX = x1 - STUB;
-                var clearY = y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60;
+                var clearY = (wps && wps.length === 1 && typeof wps[0].y === 'number')
+                    ? wps[0].y
+                    : (y2 >= y1 ? Math.max(y1, y2) + 60 : Math.min(y1, y2) - 60);
                 var rightX = x2 + STUB;
                 return [
                     { x: x1, y: y1 },
@@ -1511,7 +1528,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Default orthogonal fallback
-        var midY = Math.round((y1 + y2) / 2);
+        var midY = (wps && wps.length === 1 && typeof wps[0].y === 'number')
+            ? wps[0].y
+            : Math.round((y1 + y2) / 2);
         return [{ x: x1, y: y1 }, { x: x1, y: midY }, { x: x2, y: midY }, { x: x2, y: y2 }];
     }
 
@@ -2016,24 +2035,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderWaypointHandles(key, x1, y1, x2, y2, wps, fd, td, styleType) {
         if (isDraggingEndpoint && draggingEndpointKey === key) return;
-        var hasWps = wps && wps.length > 0;
+        var hasWps = wps && wps.length > 1;
         var pts = allPts(x1, y1, x2, y2, wps, fd, td, styleType);
+        if (!pts || pts.length < 2) return;
 
-        // Draw.io style: ○ Small circle midpoint handles on each segment
+        // Draw.io style: ○ Small circle midpoint handles on movable segments
         for (var i = 0; i < pts.length - 1; i++) {
             var a = pts[i], b = pts[i + 1];
-            if (Math.hypot(b.x - a.x, b.y - a.y) < 16) continue;
-            var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+            if (Math.hypot(b.x - a.x, b.y - a.y) < 14) continue;
+
+            // In standard 3-segment orthogonal lines (pts.length === 4), ONLY show handle on the middle crossbar (i === 1)
+            if (pts.length === 4 && i !== 1) continue;
+
+            // In longer lines (pts.length > 4), skip the first and last segments directly anchored to node ports
+            if (pts.length > 4 && (i === 0 || i === pts.length - 2)) continue;
+
+            var isHoriz = Math.abs(a.y - b.y) <= Math.abs(a.x - b.x);
+            var mx = Math.round((a.x + b.x) / 2), my = Math.round((a.y + b.y) / 2);
+
             var circ = mkSvg('circle');
             circ.setAttribute('cx', mx); circ.setAttribute('cy', my);
-            circ.setAttribute('r', '5');
+            circ.setAttribute('r', '6');
             circ.setAttribute('class', 'wp-midpoint-handle');
             circ.setAttribute('data-seg-key', key);
             circ.setAttribute('data-seg-idx', String(i));
+            circ.setAttribute('data-seg-orient', isHoriz ? 'h' : 'v');
+            circ.style.cursor = isHoriz ? 'ns-resize' : 'ew-resize';
+            circ.setAttribute('title', isHoriz ? 'Geser garis ke atas/bawah' : 'Geser garis ke kiri/kanan');
             svgEl.appendChild(circ);
         }
 
-        // Draw.io style: ◇ Diamond waypoint handles at user-created waypoints
+        // Draw.io style: ◇ Diamond waypoint handles at user-created waypoints (when multiple exist)
         if (hasWps) {
             wps.forEach(function(wp, idx) {
                 var diam = mkSvg('polygon');
@@ -2417,16 +2449,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // □ Segment midpoint handle
+        // □ Segment midpoint handle (slides line segment without adding bends)
         if (e.target.hasAttribute('data-seg-key') && e.target.hasAttribute('data-seg-idx')) {
             e.stopPropagation(); e.preventDefault();
             isDraggingSegment = true;
             draggingSegKey = e.target.getAttribute('data-seg-key');
             const si = e.target.getAttribute('data-seg-idx');
-            draggingSegInsertAt = si === 'default-mid' ? -1 : parseInt(si);
+            draggingSegIdx = si === 'default-mid' ? -1 : parseInt(si);
+            draggingSegOrient = e.target.getAttribute('data-seg-orient') || 'h';
             segDragHasMoved = false;
-            segDragStartedWp = false;
             segDragClientStart = { x: e.clientX, y: e.clientY };
+            e.target.classList.add('dragging');
             return;
         }
 
@@ -2732,28 +2765,35 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // □ Segment drag — draw.io style midpoint waypoint insert
+        // □ Segment drag — slide orthogonal line segment without adding new bends
         if (isDraggingSegment && draggingSegKey) {
             const dist = Math.hypot(e.clientX - segDragClientStart.x, e.clientY - segDragClientStart.y);
-            if (dist > 3) {
+            if (dist > 2) {
                 segDragHasMoved = true;
                 const s = clientToStage(e.clientX, e.clientY);
                 showCoordTooltip(e.clientX, e.clientY, s.x, s.y, draggingSegKey);
 
-                if (!connectorWaypoints.has(draggingSegKey)) connectorWaypoints.set(draggingSegKey, []);
-                const wps = connectorWaypoints.get(draggingSegKey);
-                const insertAt = draggingSegInsertAt < 0 ? 0 : draggingSegInsertAt;
-
-                if (!segDragStartedWp) {
-                    var newWp = { x: snapV(Math.round(s.x)), y: snapV(Math.round(s.y)) };
-                    wps.splice(Math.max(0, Math.min(wps.length, insertAt)), 0, newWp);
-                    segDragStartedWp = true;
-                    draggingWpIdx = insertAt;
-                    draggingWpKey = draggingSegKey;
-                    isDraggingWaypoint = true;
-                    isDraggingSegment  = false;
+                const geom = getConnectorGeometry(draggingSegKey);
+                if (geom) {
+                    if (draggingSegOrient === 'h') {
+                        // Horizontal segment: move midY up or down
+                        let newY = snapV(Math.round(s.y));
+                        newY = Math.max(10, Math.min(2990, newY));
+                        connectorWaypoints.set(draggingSegKey, [{
+                            x: Math.round((geom.x1 + geom.x2) / 2),
+                            y: newY
+                        }]);
+                    } else {
+                        // Vertical segment: move midX left or right
+                        let newX = snapV(Math.round(s.x));
+                        newX = Math.max(10, Math.min(3990, newX));
+                        connectorWaypoints.set(draggingSegKey, [{
+                            x: newX,
+                            y: Math.round((geom.y1 + geom.y2) / 2)
+                        }]);
+                    }
+                    renderConnectors();
                 }
-                renderConnectors();
             }
             return;
         }
@@ -2892,8 +2932,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (isDraggingWaypoint || isDraggingSegment) {
             isDraggingWaypoint = false; draggingWpKey = null; draggingWpIdx = null;
-            isDraggingSegment = false; draggingSegKey = null; draggingSegInsertAt = null;
-            segDragStartedWp = false;
+            isDraggingSegment = false; draggingSegKey = null; draggingSegIdx = null;
+            segDragHasMoved = false;
             clearWaypointGuides();
             hideCoordTooltip();
             pushUndo(); persistConnectorData(); return;
