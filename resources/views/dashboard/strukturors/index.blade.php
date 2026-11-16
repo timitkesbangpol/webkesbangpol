@@ -1129,6 +1129,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var totalLen = 0;
         if (geom) {
             var wps = connectorWaypoints.get(key) || [];
+            if (geom.fd === 'b' && geom.td === 't') {
+                var pId = parseInt(key.split('-')[0]);
+                var busY = getParentBusMidY(pId);
+                if (busY !== null && wps.length <= 1) {
+                    wps = [{ x: Math.round((geom.x1 + geom.x2) / 2), y: busY }];
+                }
+            }
             var pts = allPts(geom.x1, geom.y1, geom.x2, geom.y2, wps, geom.fd, geom.td, getConnectorStyle(key).type);
             for (var i = 1; i < pts.length; i++) {
                 totalLen += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
@@ -1821,6 +1828,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 fd = autoPorts.fd;     td = autoPorts.td;
             }
 
+            // Harmonize sibling crossbars so all lines from same parent share consistent height and distance
+            if (fd === 'b' && td === 't') {
+                var busY = getParentBusMidY(parent.id);
+                if (busY !== null && wps.length <= 1) {
+                    wps = [{ x: Math.round((x1 + x2) / 2), y: busY }];
+                }
+            } else if ((fd === 'r' && td === 'l') || (fd === 'l' && td === 'r')) {
+                var busX = getParentBusMidX(parent.id);
+                if (busX !== null && wps.length <= 1) {
+                    wps = [{ x: busX, y: Math.round((y1 + y2) / 2) }];
+                }
+            }
+
             var d = buildPath(x1, y1, x2, y2, wps, fd, td, cStyle.type);
 
             // Shadow
@@ -2030,6 +2050,74 @@ document.addEventListener('DOMContentLoaded', function() {
             fd = auto.fd;      td = auto.td;
         }
         return { x1: x1, y1: y1, x2: x2, y2: y2, fd: fd, td: td };
+    }
+
+    // Helper: get consistent unified horizontal bus line (midY) for all children of a parent
+    function getParentBusMidY(parentId) {
+        var p = getNodeById(parentId);
+        if (!p) return null;
+        var siblings = nodes.filter(function(n) { return n.parent_id === parentId; });
+        if (siblings.length === 0) return null;
+
+        // 1. If any sibling with bottom-to-top hierarchy has a custom waypoint, share that customized height!
+        for (var i = 0; i < siblings.length; i++) {
+            var k = parentId + '-' + siblings[i].id;
+            var w = connectorWaypoints.get(k);
+            if (w && w.length === 1 && typeof w[0].y === 'number') {
+                return w[0].y;
+            }
+        }
+
+        // 2. Otherwise calculate common default midY based on parent bottom port and minimum child top port
+        var pPorts = getNodePorts(p);
+        var y1 = pPorts.b.y;
+        var minChildY = Infinity;
+        siblings.forEach(function(s) {
+            var sPorts = getNodePorts(s);
+            var uPorts = connectorPorts.get(parentId + '-' + s.id);
+            var td = (uPorts && uPorts.toPort) ? uPorts.toPort : 't';
+            if (sPorts[td] && sPorts[td].y > y1) {
+                minChildY = Math.min(minChildY, sPorts[td].y);
+            }
+        });
+
+        if (minChildY !== Infinity && minChildY > y1 + 30) {
+            return Math.round((y1 + minChildY) / 2);
+        }
+        return null;
+    }
+
+    // Helper: get consistent vertical bus line (midX) for horizontal hierarchy
+    function getParentBusMidX(parentId) {
+        var p = getNodeById(parentId);
+        if (!p) return null;
+        var siblings = nodes.filter(function(n) { return n.parent_id === parentId; });
+        if (siblings.length === 0) return null;
+
+        for (var i = 0; i < siblings.length; i++) {
+            var k = parentId + '-' + siblings[i].id;
+            var w = connectorWaypoints.get(k);
+            if (w && w.length === 1 && typeof w[0].x === 'number') {
+                return w[0].x;
+            }
+        }
+
+        var pPorts = getNodePorts(p);
+        var x1 = pPorts.r.x;
+        var minChildX = Infinity;
+        siblings.forEach(function(s) {
+            var sPorts = getNodePorts(s);
+            var uPorts = connectorPorts.get(parentId + '-' + s.id);
+            var td = (uPorts && uPorts.toPort) ? uPorts.toPort : 'l';
+            if (sPorts[td] && sPorts[td].x > x1) {
+                minChildX = Math.min(minChildX, sPorts[td].x);
+            }
+        });
+
+        if (minChildX !== Infinity && minChildX > x1 + 30) {
+            return Math.round((x1 + minChildX) / 2);
+        }
+        return null;
     }
 
 
@@ -2777,20 +2865,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (geom) {
                     if (draggingSegOrient === 'h') {
                         // Horizontal segment: move midY up or down
-                        let newY = snapV(Math.round(s.y));
+                        var targetX = Math.round((geom.x1 + geom.x2) / 2);
+                        var targetY = Math.round(s.y);
+
+                        // Magnetic snap to other connectors / nodes / waypoints
+                        var wpSnap = computeWaypointSnap(targetX, targetY, draggingSegKey);
+                        var newY = wpSnap.snapY !== null ? Math.round(targetY + wpSnap.snapY) : snapV(targetY);
                         newY = Math.max(10, Math.min(2990, newY));
+
+                        wpAlignGuides = wpSnap.guides;
+                        renderWaypointGuides();
+
+                        // Update current connector
                         connectorWaypoints.set(draggingSegKey, [{
-                            x: Math.round((geom.x1 + geom.x2) / 2),
+                            x: targetX,
                             y: newY
                         }]);
+
+                        // Synchronize ALL bottom-to-top siblings under the same parent!
+                        var pId = parseInt(draggingSegKey.split('-')[0]);
+                        if (geom.fd === 'b' && geom.td === 't') {
+                            var siblings = nodes.filter(function(n) { return n.parent_id === pId; });
+                            siblings.forEach(function(sib) {
+                                var sKey = pId + '-' + sib.id;
+                                var sGeom = getConnectorGeometry(sKey);
+                                if (sGeom && sGeom.fd === 'b' && sGeom.td === 't') {
+                                    connectorWaypoints.set(sKey, [{
+                                        x: Math.round((sGeom.x1 + sGeom.x2) / 2),
+                                        y: newY
+                                    }]);
+                                }
+                            });
+                        }
                     } else {
                         // Vertical segment: move midX left or right
-                        let newX = snapV(Math.round(s.x));
+                        var targetX = Math.round(s.x);
+                        var targetY = Math.round((geom.y1 + geom.y2) / 2);
+
+                        var wpSnap = computeWaypointSnap(targetX, targetY, draggingSegKey);
+                        var newX = wpSnap.snapX !== null ? Math.round(targetX + wpSnap.snapX) : snapV(targetX);
                         newX = Math.max(10, Math.min(3990, newX));
+
+                        wpAlignGuides = wpSnap.guides;
+                        renderWaypointGuides();
+
                         connectorWaypoints.set(draggingSegKey, [{
                             x: newX,
-                            y: Math.round((geom.y1 + geom.y2) / 2)
+                            y: targetY
                         }]);
+
+                        // Synchronize siblings for horizontal hierarchy (fd === 'r' && td === 'l')
+                        var pId = parseInt(draggingSegKey.split('-')[0]);
+                        if (geom.fd === 'r' && geom.td === 'l') {
+                            var siblings = nodes.filter(function(n) { return n.parent_id === pId; });
+                            siblings.forEach(function(sib) {
+                                var sKey = pId + '-' + sib.id;
+                                var sGeom = getConnectorGeometry(sKey);
+                                if (sGeom && sGeom.fd === 'r' && sGeom.td === 'l') {
+                                    connectorWaypoints.set(sKey, [{
+                                        x: newX,
+                                        y: Math.round((sGeom.y1 + sGeom.y2) / 2)
+                                    }]);
+                                }
+                            });
+                        }
                     }
                     renderConnectors();
                 }
@@ -3675,14 +3813,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Connector actions
-        if (action === 'clear-waypoints') {
+        if (action === 'clear-waypoints' || action === 'simplify') {
             const key = contextMenu.dataset.connectorKey;
-            if (key) { pushUndo(); connectorWaypoints.delete(key); renderConnectors(); showToast('Semua belokan dihapus', 'info'); persistConnectorData(); }
-            return;
-        }
-        if (action === 'simplify') {
-            const key = contextMenu.dataset.connectorKey;
-            if (key) { pushUndo(); connectorWaypoints.delete(key); renderConnectors(); showToast('Garis disederhanakan', 'success'); persistConnectorData(); }
+            if (key) {
+                pushUndo();
+                var pId = parseInt(key.split('-')[0]);
+                var siblings = nodes.filter(function(n) { return n.parent_id === pId; });
+                siblings.forEach(function(sib) {
+                    connectorWaypoints.delete(pId + '-' + sib.id);
+                });
+                connectorWaypoints.delete(key);
+                renderConnectors();
+                showToast(action === 'clear-waypoints' ? 'Semua belokan dihapus' : 'Garis disederhanakan', 'success');
+                persistConnectorData();
+            }
             return;
         }
         if (action === 'edit-waypoints') {
@@ -3958,7 +4102,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!parent) return;
 
             const key = parent.id + '-' + child.id;
-            const wps = connectorWaypoints.get(key) || [];
+            var wps = connectorWaypoints.get(key) || [];
+            if (fd === 'b' && td === 't') {
+                var busY = getParentBusMidY(parent.id);
+                if (busY !== null && wps.length <= 1) {
+                    wps = [{ x: Math.round((p1.x + p2.x) / 2), y: busY }];
+                }
+            } else if ((fd === 'r' && td === 'l') || (fd === 'l' && td === 'r')) {
+                var busX = getParentBusMidX(parent.id);
+                if (busX !== null && wps.length <= 1) {
+                    wps = [{ x: busX, y: Math.round((p1.y + p2.y) / 2) }];
+                }
+            }
             const userP = connectorPorts.get(key) || {};
             const bp = getBestPorts(parent, child);
             const fd = userP.from || bp.from, td = userP.to || bp.to;
